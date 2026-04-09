@@ -6,13 +6,13 @@ const IS_PROD = ENV === 'production'
 
 // ⚠️ 部署前请确认以下 URL 已更新为你的实际后端地址
 const BASE_URL = IS_PROD
-  ? 'https://YOUR_DOMAIN.com/api'   // 👈 替换为你的生产后端地址
-  : 'http://localhost:3000/api'     // 开发环境
+  ? 'https://daxuanfapai.com/api'         // 👈 生产环境（域名备案通过后）
+  : 'http://39.108.61.93:3000/api'        // 👈 开发/测试环境（先用服务器IP）
 
 // ⚠️ 微信登录接口地址（获取 code 换取 openid/session_key）
 const WX_LOGIN_URL = IS_PROD
-  ? 'https://YOUR_DOMAIN.com/api/auth/wx-login'  // 👈 替换为实际地址
-  : 'http://localhost:3000/api/auth/wx-login'
+  ? 'https://daxuanfapi.com/api/auth/wx-login'  // 👈 生产环境
+  : 'http://39.108.61.93:3000/api/auth/wx-login'  // 👈 测试环境
 
 App({
   globalData: {
@@ -20,7 +20,8 @@ App({
     token: null,
     baseUrl: BASE_URL,
     wxLoginUrl: WX_LOGIN_URL,
-    isProduction: IS_PROD
+    isProduction: IS_PROD,
+    appid: 'wx5ecf6612012d363d'  // 谷雨拍卖小程序 AppID
   },
 
   onLaunch() {
