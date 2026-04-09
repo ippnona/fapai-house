@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=375, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>深圳法拍房源 · 首页预览</title>
+  <style>
+    /* ── 重置 ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1a1a2e;
+      --red: #e94560;
+      --dark: #16213e;
+      --card: #fff;
+      --bg: #f5f5f7;
+      --text: #333;
+      --sub: #888;
+      --border: #f0f0f0;
+      --shadow: 0 2px 12px rgba(26,26,46,.08);
+      --radius: 12px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── 状态栏 ── */
+    .status-bar {
+      background: var(--navy);
+      color: #fff;
+      padding: 8px 16px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-bar .time { font-weight: 600; }
+    .status-icons { display: flex; gap: 4px; align-items: center; }
+
+    /* ── 导航栏 ── */
+    .navbar {
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 16px 16px;
+    }
+    .navbar-title {
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-input-wrap {
+      flex: 1;
+      background: rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .search-input-wrap input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 14px;
+      width: 100%;
+    }
+    .search-input-wrap input::placeholder { color: rgba(255,255,255,.55); }
+    .filter-btn {
+      background: rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ── 横幅 ── */
+    .banner {
+      background: linear-gradient(135deg, var(--navy), #2d3561);
+      margin: 12px;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .banner::before {
+      content: '';
+      position: absolute;
+      right: -20px; top: -20px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(233,69,96,.2);
+    }
+    .banner h2 { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+    .banner p  { font-size: 22px; font-weight: 700; }
+    .banner .sub { font-size: 12px; opacity: .7; margin-top: 2px; }
+    .banner-tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .banner-tag {
+      background: rgba(255,255,255,.2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+    }
+
+    /* ── 快速筛选 ── */
+    .quick-filters {
+      display: flex;
+      gap: 8px;
+      padding: 0 12px 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .quick-filters::-webkit-scrollbar { display: none; }
+    .qf-chip {
+      flex-shrink: 0;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .qf-chip.active, .qf-chip:hover {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+    }
+    .qf-chip .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+    .qf-chip.active .dot { background: #fff; }
+
+    /* ── 统计条 ── */
+    .stats-bar {
+      display: flex;
+      padding: 0 12px 10px;
+      gap: 8px;
+    }
+    .stat-item {
+      flex: 1;
+      background: #fff;
+      border-radius: 8px;
+      padding: 8px 0;
+      text-align: center;
+      font-size: 11px;
+      color: var(--sub);
+    }
+    .stat-item .num {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--red);
+      display: block;
+    }
+
+    /* ── 房源列表 ── */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 12px 8px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .section-more {
+      font-size: 12px;
+      color: var(--sub);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+    }
+
+    .house-card {
+      background: #fff;
+      border-radius: var(--radius);
+      margin: 0 12px 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .house-card:active {
+      transform: scale(.98);
+      box-shadow: 0 1px 6px rgba(26,26,46,.06);
+    }
+    .card-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+    .card-img-wrap { position: relative; }
+    .card-badge {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: var(--red);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .card-badge.orange { background: #f5a623; }
+    .card-badge.green  { background: #52c41a; }
+    .card-badge.gray   { background: #999; }
+    .card-img-placeholder {
+      width: 100%;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      color: rgba(255,255,255,.7);
+      font-size: 13px;
+    }
+    .card-body { padding: 12px; }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 6px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .meta-tag {
+      background: #f5f5f7;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      color: #666;
+    }
+    .card-price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .price-left .current {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--red);
+    }
+    .price-left .current small { font-size: 12px; }
+    .price-left .original {
+      font-size: 12px;
+      color: #bbb;
+      text-decoration: line-through;
+      margin-left: 6px;
+    }
+    .discount-badge {
+      background: #fff0f3;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-info {
+      font-size: 11px;
+      color: var(--sub);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .hot-icon {
+      color: #ff6700;
+      font-size: 12px;
+    }
+
+    /* ── 底部导航 ── */
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+      box-shadow: 0 -2px 12px rgba(0,0,0,.06);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10px;
+      color: var(--sub);
+      cursor: pointer;
+      flex: 1;
+      padding: 4px 0;
+      transition: color .2s;
+    }
+    .tab-item.active { color: var(--red); }
+    .tab-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .tab-item.active .tab-icon svg path { fill: var(--red); }
+
+    /* ── 筛选弹层 ── */
+    .filter-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+    }
+    .filter-overlay.show { display: flex; }
+    .filter-panel {
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-width: 430px;
+      padding: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform .3s ease;
+    }
+    .filter-overlay.show .filter-panel { transform: translateY(0); }
+    .filter-group { margin-bottom: 20px; }
+    .filter-group-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+    .filter-options { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-opt {
+      background: #f5f5f7;
+      border: 1.5px solid transparent;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-opt.active {
+      background: #fff0f3;
+      border-color: var(--red);
+      color: var(--red);
+    }
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .filter-actions button {
+      flex: 1;
+      height: 44px;
+      border: none;
+      border-radius: 22px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-reset { background: #f5f5f7; color: var(--text); }
+    .btn-confirm { background: var(--red); color: #fff; }
+    .filter-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #f5f5f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* ── 空状态占位 ── */
+    .empty-card {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--sub);
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+    /* ── 进度条 ── */
+    .auction-progress {
+      margin-top: 6px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--sub);
+      margin-bottom: 3px;
+    }
+    .progress-bar {
+      height: 4px;
+      background: #f0f0f0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--red);
+      border-radius: 2px;
+      transition: width .4s;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 状态栏 -->
+<div class="status-bar">
+  <span class="time" id="statusTime">12:13</span>
+  <div class="status-icons">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M22 11H2v2h20z" fill="#fff"/></svg>
+  </div>
+</div>
+
+<!-- 导航栏 -->
+<div class="navbar">
+  <div class="navbar-title">深圳法拍房源</div>
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,.6)"><circle cx="11" cy="11" r="7" stroke="rgba(255,255,255,.6)" stroke-width="2" fill="none"/><path d="M16.5 16.5L21 21" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" placeholder="搜索小区名称、区域..." id="searchInput" />
+    </div>
+    <div class="filter-btn" onclick="toggleFilter()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+      筛选
+    </div>
+  </div>
+</div>
+
+<!-- 横幅 -->
+<div class="banner">
+  <h2>今日新上房源</h2>
+  <p id="bannerCount">12 套</p>
+  <div class="sub">覆盖深圳 10 个行政区 · 实时更新</div>
+  <div class="banner-tags">
+    <span class="banner-tag">🏠 住宅</span>
+    <span class="banner-tag">🏢 商业</span>
+    <span class="banner-tag">⚡ 打折</span>
+  </div>
+</div>
+
+<!-- 快速筛选 -->
+<div class="quick-filters">
+  <div class="qf-chip active" onclick="setFilter(this, 'all')">
+    <span class="dot"></span> 全部
+  </div>
+  <div class="qf-chip" onclick="setFilter(this, 'residential')">🏠 住宅</div>
+  <div class="qf-chip" onclick="setFilter(this, 'commercial')">🏢 商业</div>
+  <div class="qf-chip" onclick="setFilter(this, 'hot')">🔥 热门</div>
+  <div class="qf-chip" onclick="setFilter(this, 'upcoming')">⏰ 即将开拍</div>
+  <div class="qf-chip" onclick="setFilter(this, 'high_discount')">💰 低折扣</div>
+</div>
+
+<!-- 统计 -->
+<div class="stats-bar">
+  <div class="stat-item"><span class="num" id="statTotal">42</span>在架房源</div>
+  <div class="stat-item"><span class="num" id="statOngoing">21</span>正在拍卖</div>
+  <div class="stat-item"><span class="num" id="statSold">6</span>已成交</div>
+  <div class="stat-item"><span class="num" id="statHot">8</span>热门房源</div>
+</div>
+
+<!-- 列表 -->
+<div class="section-header">
+  <span class="section-title">🏠 推荐房源</span>
+  <span class="section-more">更多 <span>›</span></span>
+</div>
+
+<div id="houseList"></div>
+
+<!-- 底部占位 -->
+<div style="height: 70px;"></div>
+
+<!-- tabBar -->
+<div class="tabbar">
+  <div class="tab-item active">
+    <div class="tab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 3L2 12h3v9h14v-9h3L12 3zm5 14h-2v-4H9v4H7v-4.97L12 5.14l5 6.89V17z" fill="#e94560"/></svg>
+    </div>
+    房源
+  </div>
+  <div class="tab-item">
+    <div class="tab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#999"/></svg>
+    </div>
+    地图
+  </div>
+  <div class="tab-item">
+    <div class="tab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#999"/></svg>
+    </div>
+    我的
+  </div>
+</div>
+
+<!-- 筛选弹层 -->
+<div class="filter-overlay" id="filterOverlay" onclick="if(event.target===this)toggleFilter()">
+  <div class="filter-panel">
+    <div class="filter-close" onclick="toggleFilter()">✕</div>
+    <div class="filter-group">
+      <div class="filter-group-title">物业类型</div>
+      <div class="filter-options">
+        <div class="filter-opt active">全部</div>
+        <div class="filter-opt">住宅用房</div>
+        <div class="filter-opt">商业用房</div>
+        <div class="filter-opt">办公用房</div>
+        <div class="filter-opt">工业用房</div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">行政区</div>
+      <div class="filter-options">
+        <div class="filter-opt active">全部</div>
+        <div class="filter-opt">福田区</div>
+        <div class="filter-opt">罗湖区</div>
+        <div class="filter-opt">南山区</div>
+        <div class="filter-opt">宝安区</div>
+        <div class="filter-opt">龙岗区</div>
+        <div class="filter-opt">龙华区</div>
+        <div class="filter-opt">光明区</div>
+        <div class="filter-opt">坪山区</div>
+        <div class="filter-opt">盐田区</div>
+        <div class="filter-opt">大鹏新区</div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">拍卖状态</div>
+      <div class="filter-options">
+        <div class="filter-opt active">全部</div>
+        <div class="filter-opt">即将开始</div>
+        <div class="filter-opt">正在进行</div>
+        <div class="filter-opt">已成交</div>
+        <div class="filter-opt">已流拍</div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">价格区间（万）</div>
+      <div class="filter-options">
+        <div class="filter-opt active">不限</div>
+        <div class="filter-opt">100以下</div>
+        <div class="filter-opt">100-300</div>
+        <div class="filter-opt">300-500</div>
+        <div class="filter-opt">500-1000</div>
+        <div class="filter-opt">1000以上</div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">折扣区间</div>
+      <div class="filter-options">
+        <div class="filter-opt active">不限</div>
+        <div class="filter-opt">7折以下</div>
+        <div class="filter-opt">7-8折</div>
+        <div class="filter-opt">8-9折</div>
+        <div class="filter-opt">9折以上</div>
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-reset" onclick="resetFilter()">重置</button>
+      <button class="btn-confirm" onclick="confirmFilter()">确定筛选</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── 演示数据（从 demo_2026-04-09.json 提取）──
+  const houses = [
+    { id:1, title:"光明区海德园 二拍 196㎡ 3室2厅", platform:"ali", district:"光明区", category:"residential", price:691.04, marketPrice:874.74, discount:0.79, area:196.53, unitPrice:35342, status:"ongoing", auctionStage:"二拍", bidCount:15, isHot:true, address:"广东省深圳市光明区凤凰城光源五路" },
+    { id:2, title:"福田区海德园 二拍 235㎡ 大平层", platform:"ali", district:"福田区", category:"residential", price:696.91, marketPrice:1142.48, discount:0.61, area:235.15, unitPrice:29637, status:"sold", auctionStage:"二拍", bidCount:28, isHot:true, address:"广东省深圳市福田区深南大道6006号" },
+    { id:3, title:"光明区天鹅堡 二拍 111㎡ 2室1厅", platform:"ali", district:"光明区", category:"residential", price:331.91, marketPrice:454.67, discount:0.73, area:111.15, unitPrice:29861, status:"ended", auctionStage:"二拍", bidCount:0, isHot:false, address:"广东省深圳市光明区光明大道2288号" },
+    { id:4, title:"南山区恒裕滨城 一拍 89㎡ 3室2厅", platform:"ali", district:"南山区", category:"residential", price:820.50, marketPrice:1200.00, discount:0.68, area:89.5, unitPrice:91642, status:"ongoing", auctionStage:"一拍", bidCount:22, isHot:true, address:"广东省深圳市南山区后海滨路2888号" },
+    { id:5, title:"龙岗区招商依山郡 一拍 128㎡ 4室2厅", platform:"jd", district:"龙岗区", category:"residential", price:288.00, marketPrice:410.00, discount:0.70, area:128.8, unitPrice:22360, status:"ongoing", auctionStage:"一拍", bidCount:8, isHot:false, address:"广东省深圳市龙岗区龙城大道168号" },
+    { id:6, title:"宝安区华丰前海湾 一拍 78㎡ 2室1厅", platform:"jd", district:"宝安区", category:"residential", price:415.00, marketPrice:598.00, discount:0.69, area:78.3, unitPrice:53000, status:"upcoming", auctionStage:"一拍", bidCount:0, isHot:true, address:"广东省深圳市宝安区宝安中心区罗田路" },
+    { id:7, title:"罗湖区东门168 一拍 45㎡ 1室0厅", platform:"ali", district:"罗湖区", category:"commercial", price:88.00, marketPrice:152.00, discount:0.58, area:45.2, unitPrice:19469, status:"ongoing", auctionStage:"一拍", bidCount:5, isHot:false, address:"广东省深圳市罗湖区东门中路1234号" },
+    { id:8, title:"南山区科技园写字楼 变卖 220㎡", platform:"ali", district:"南山区", category:"commercial", price:580.00, marketPrice:980.00, discount:0.59, area:220, unitPrice:26363, status:"ongoing", auctionStage:"变卖", bidCount:3, isHot:false, address:"广东省深圳市南山区科技园高新南七道" },
+  ];
+
+  // 颜色映射
+  const statusConfig = {
+    ongoing:  { label:'正在拍卖', cls:'orange', progress: .6 },
+    upcoming: { label:'即将开始', cls:'green',  progress: .0 },
+    ended:    { label:'已结束',   cls:'gray',   progress: 1.0 },
+    sold:     { label:'已成交',   cls:'gray',   progress: 1.0 },
+  };
+
+  const categoryIcon = { residential:'🏠', commercial:'🏢' };
+
+  // 模拟图片（渐变色占位图 HTML）
+  const placeholderColors = [
+    'linear-gradient(135deg,#1a1a2e,#3a3a7a)',
+    'linear-gradient(135deg,#2d1a3e,#6a3a7a)',
+    'linear-gradient(135deg,#1a3a2e,#3a7a5a)',
+    'linear-gradient(135deg,#3a2a1a,#7a5a3a)',
+    'linear-gradient(135deg,#1a2a3a,#3a5a7a)',
+    'linear-gradient(135deg,#3a1a2e,#7a3a5a)',
+  ];
+
+  function getPlaceholderBg(idx) {
+    return placeholderColors[idx % placeholderColors.length];
+  }
+
+  function formatPrice(p) {
+    if (p >= 10000) return (p/10000).toFixed(1) + '亿';
+    if (p >= 1000) return p.toFixed(0);
+    return p.toFixed(1);
+  }
+
+  function formatUnit(u) {
+    return (u/10000).toFixed(2) + '万/㎡';
+  }
+
+  let currentFilter = 'all';
+
+  function renderList(filter = 'all') {
+    currentFilter = filter;
+    const list = document.getElementById('houseList');
+    let filtered = houses;
+
+    if (filter === 'residential') filtered = houses.filter(h => h.category === 'residential');
+    else if (filter === 'commercial') filtered = houses.filter(h => h.category === 'commercial');
+    else if (filter === 'hot') filtered = houses.filter(h => h.isHot);
+    else if (filter === 'upcoming') filtered = houses.filter(h => h.status === 'upcoming');
+    else if (filter === 'high_discount') filtered = houses.filter(h => h.discount < 0.7);
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty-card"><div class="empty-icon">🏠</div><p>暂无符合条件的数据</p></div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map((h, i) => {
+      const sc = statusConfig[h.status] || statusConfig.ended;
+      const auctionLabel = h.auctionStage || '一拍';
+      const discountText = (h.discount * 10).toFixed(1) + '折';
+      const priceText = formatPrice(h.price);
+      const unitText = formatUnit(h.unitPrice);
+
+      return `
+      <div class="house-card" onclick="alert('跳转详情: ${h.title}')">
+        <div class="card-img-wrap">
+          <div class="card-img-placeholder" style="background:${getPlaceholderBg(i)}">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)">
+              <path d="M12 3L2 12h3v9h14v-9h3L12 3z"/>
+            </svg>
+            <span>房源实景图</span>
+          </div>
+          <span class="card-badge ${sc.cls}">${auctionLabel} · ${sc.label}</span>
+          ${h.isHot ? '<span class="card-badge orange" style="left:auto;right:10px;background:#ff6700;">🔥 热</span>' : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-title">${categoryIcon[h.category] || '🏠'} ${h.title}</div>
+          <div class="card-meta">
+            <span class="meta-tag">📍 ${h.district}</span>
+            <span class="meta-tag">📐 ${h.area.toFixed(0)}㎡</span>
+            <span class="meta-tag">🏷️ ${unitText}</span>
+            ${h.bidCount > 0 ? `<span class="meta-tag">⚔️ ${h.bidCount}人报名</span>` : ''}
+          </div>
+          ${h.status === 'ongoing' ? `
+          <div class="auction-progress">
+            <div class="progress-label"><span>竞价进度</span><span>60%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+          </div>` : ''}
+          <div class="card-price-row">
+            <div class="price-left">
+              <span class="current">${priceText}<small> 万</small></span>
+              <span class="original">${formatPrice(h.marketPrice)}万</span>
+            </div>
+            <span class="discount-badge">${discountText}</span>
+          </div>
+          <div class="card-footer">
+            <span class="footer-info">
+              ${h.platform === 'ali' ? '🐱 阿里拍卖' : '🐶 京东拍卖'}
+            </span>
+            <span class="footer-info">🔗 查看详情 ›</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // 快速筛选
+  function setFilter(el, type) {
+    document.querySelectorAll('.qf-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderList(type);
+  }
+
+  // 筛选弹层
+  function toggleFilter() {
+    const el = document.getElementById('filterOverlay');
+    el.classList.toggle('show');
+  }
+  function resetFilter() {
+    document.querySelectorAll('.filter-opt').forEach(o => o.classList.remove('active'));
+    document.querySelectorAll('.filter-group .filter-opt').forEach((o, i) => {
+      if (i === 0) o.classList.add('active');
+    });
+  }
+  function confirmFilter() { toggleFilter(); renderList(currentFilter); }
+
+  // 状态栏时间
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('statusTime').textContent =
+      now.getHours().toString().padStart(2,'0') + ':' +
+      now.getMinutes().toString().padStart(2,'0');
+  }
+
+  // Tab 切换
+  document.querySelectorAll('.tab-item').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // 筛选选项互斥
+  document.querySelectorAll('.filter-group').forEach(group => {
+    group.querySelectorAll('.filter-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        group.querySelectorAll('.filter-opt').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+      });
+    });
+  });
+
+  // 搜索
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    const q = e.target.value.trim();
+    if (!q) { renderList('all'); return; }
+    const results = houses.filter(h =>
+      h.title.includes(q) || h.district.includes(q) || h.address.includes(q)
+    );
+    const list = document.getElementById('houseList');
+    if (results.length === 0) {
+      list.innerHTML = '<div class="empty-card"><div class="empty-icon">🔍</div><p>未找到 "' + q + '" 相关房源</p></div>';
+    } else {
+      // 临时替换渲染
+      const orig = houses;
+      window._houses = houses;
+      houses.splice(0, houses.length, ...results);
+      renderList('all');
+      houses.splice(0, houses.length, ...window._houses);
+    }
+  });
+
+  // 初始化
+  updateTime();
+  setInterval(updateTime, 60000);
+  renderList('all');
+</script>
+</body>
+</html>

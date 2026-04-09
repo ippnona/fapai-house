@@ -1,0 +1,16 @@
+{
+  "name": "fapai-house-scraper",
+  "version": "1.0.0",
+  "description": "深圳法拍房数据采集脚本 - 阿里法拍 & 京东法拍",
+  "type": "module",
+  "scripts": {
+    "ali": "node ali-scraper.mjs",
+    "jd": "node jd-scraper.mjs",
+    "both": "node run-both.mjs",
+    "import": "node import-to-db.mjs",
+    "demo": "node demo-data.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "^1.40.0"
+  }
+}

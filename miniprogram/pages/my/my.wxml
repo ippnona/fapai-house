@@ -1,0 +1,71 @@
+<view class="page-my">
+  <!-- 头像区域 -->
+  <view class="profile-header">
+    <view class="avatar-wrap">
+      <view class="avatar">{{userInfo.nickname ? userInfo.nickname[0] : '?'}}</view>
+    </view>
+    <view class="profile-info" wx:if="{{isLogin}}">
+      <view class="nickname">{{userInfo.nickname}}</view>
+      <view class="phone">{{userInfo.phone}}</view>
+      <view class="membership-badge {{userInfo.membership}}">
+        {{membershipText}}
+      </view>
+    </view>
+    <view class="profile-info" wx:else bindtap="goLogin">
+      <view class="nickname">点击登录</view>
+      <view class="phone">登录后查看更多功能</view>
+    </view>
+  </view>
+
+  <!-- 功能列表 -->
+  <view class="func-card">
+    <view class="func-item" bindtap="goMyFavorites">
+      <text class="func-icon">⭐</text>
+      <text class="func-text">我的收藏</text>
+      <text class="func-arrow">›</text>
+    </view>
+    <view class="func-item" bindtap="goConsult">
+      <text class="func-icon">💬</text>
+      <text class="func-text">咨询记录</text>
+      <text class="func-arrow">›</text>
+    </view>
+    <view class="func-item" bindtap="showWechatQr">
+      <text class="func-icon">📱</text>
+      <text class="func-text">添加企业微信</text>
+      <text class="func-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 关于 -->
+  <view class="func-card">
+    <view class="func-item" bindtap="showAbout">
+      <text class="func-icon">ℹ️</text>
+      <text class="func-text">关于平台</text>
+      <text class="func-arrow">›</text>
+    </view>
+    <view class="func-item" bindtap="callHotline">
+      <text class="func-icon">📞</text>
+      <text class="func-text">客服热线</text>
+      <text class="func-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-btn" wx:if="{{isLogin}}" bindtap="doLogout">
+    退出登录
+  </view>
+
+  <!-- 管理员入口 -->
+  <view class="admin-entry" wx:if="{{userInfo.role === 'admin'}}" bindtap="goAdmin">
+    🔧 管理后台
+  </view>
+
+  <!-- 企业微信二维码弹窗 -->
+  <view class="qr-modal" wx:if="{{showQr}}" bindtap="closeQr">
+    <view class="qr-content" catchtap="">
+      <view class="qr-title">扫码添加企业微信</view>
+      <image class="qr-image" src="/assets/wechat-qr.png" mode="aspectFit"/>
+      <view class="qr-tip">专业法拍顾问一对一服务</view>
+    </view>
+  </view>
+</view>

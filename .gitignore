@@ -1,0 +1,38 @@
+# 微信小程序密钥（绝对不能提交！）
+deploy.config.json
+server/.env
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境变量
+.env
+.env.local
+.env.production
+
+# 日志
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 微信开发者工具缓存
+/.wechat缓存/
+
+# 演示数据（上线前删除）
+data/
+scraper/demo-data.json
+
+# 后端依赖（npm install 后会重新生成）
+server/node_modules/

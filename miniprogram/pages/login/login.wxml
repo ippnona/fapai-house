@@ -1,0 +1,36 @@
+<view class="page-login">
+  <view class="login-header">
+    <view class="logo">🏠</view>
+    <view class="app-name">深圳法拍房</view>
+    <view class="app-desc">专业法拍房信息服务平台</view>
+  </view>
+
+  <view class="login-form">
+    <view class="form-item">
+      <text class="form-icon">📱</text>
+      <input 
+        class="form-input" 
+        type="number" 
+        maxlength="11"
+        placeholder="请输入手机号" 
+        value="{{phone}}"
+        bindinput="onPhoneInput"
+      />
+    </view>
+    <view class="form-item">
+      <text class="form-icon">🔒</text>
+      <input 
+        class="form-input" 
+        password 
+        placeholder="请输入密码" 
+        value="{{password}}"
+        bindinput="onPasswordInput"
+      />
+    </view>
+    <button class="btn-login" bindtap="doLogin" loading="{{loading}}">登 录</button>
+  </view>
+
+  <view class="login-footer">
+    <text class="link" bindtap="goRegister">没有账号？立即注册</text>
+  </view>
+</view>

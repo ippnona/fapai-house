@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/detail/detail",
+    "pages/map/map",
+    "pages/my/my",
+    "pages/login/login",
+    "pages/register/register",
+    "pages/admin/admin"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1a1a2e",
+    "navigationBarTitleText": "深圳法拍房",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f7"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#e94560",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "房源",
+        "iconPath": "assets/tab-house.png",
+        "selectedIconPath": "assets/tab-house-active.png"
+      },
+      {
+        "pagePath": "pages/map/map",
+        "text": "地图",
+        "iconPath": "assets/tab-map.png",
+        "selectedIconPath": "assets/tab-map-active.png"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我的",
+        "iconPath": "assets/tab-user.png",
+        "selectedIconPath": "assets/tab-user-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

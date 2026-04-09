@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: fapai-house-server
+    env: node
+    region: hongkong
+    plan: free
+    buildCommand: npm install
+    startCommand: node app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: WECHAT_APPID
+        value: wx1b250ad4e69950e8
+      - key: WECHAT_SECRET
+        sync: false
+      - key: MONGO_URI
+        fromDatabase:
+          name: fapai-mongo
+          property: connectionString
+
+databases:
+  - name: fapai-mongo
+    databaseName: fapai_db
+    plan: free
+    region: hongkong

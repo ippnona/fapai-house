@@ -1,0 +1,124 @@
+<view class="page-detail">
+  <!-- 图片轮播 -->
+  <swiper class="detail-swiper" indicator-dots autoplay circular>
+    <swiper-item wx:for="{{house.images}}" wx:key="*this">
+      <image src="{{item}}" mode="aspectFill" class="swiper-img" bindtap="previewImage" data-url="{{item}}"/>
+    </swiper-item>
+    <swiper-item wx:if="{{house.images.length === 0}}">
+      <image src="/assets/default-house.png" mode="aspectFill" class="swiper-img"/>
+    </swiper-item>
+  </swiper>
+
+  <!-- 状态横幅 -->
+  <view class="status-banner {{house.status}}">
+    <view class="status-text">{{statusMap[house.status]}}</view>
+    <view class="status-platform">{{house.platform === 'ali' ? '阿里拍卖' : '京东拍卖'}}</view>
+  </view>
+
+  <!-- 价格区域 -->
+  <view class="card price-card">
+    <view class="price-main">
+      <text class="price-label-sm">起拍价</text>
+      <view class="price-big">
+        <text class="price">{{formatPrice(house.auctionStartPrice)}}</text>
+        <text class="price-unit">万</text>
+      </view>
+    </view>
+    <view class="price-row">
+      <view class="price-item">
+        <text class="price-label-sm">市场价</text>
+        <text class="market-value">{{formatPrice(house.marketPrice)}}万</text>
+      </view>
+      <view class="price-item" wx:if="{{house.currentPrice}}">
+        <text class="price-label-sm">当前价</text>
+        <text class="current-value">{{formatPrice(house.currentPrice)}}万</text>
+      </view>
+      <view class="price-item">
+        <text class="price-label-sm">保证金</text>
+        <text class="deposit-value">{{formatPrice(house.deposit)}}万</text>
+      </view>
+    </view>
+    <view class="discount-bar" wx:if="{{house.marketPrice > house.auctionStartPrice}}">
+      低于市场价 <text class="discount-num">{{discountOff()}}</text>，相当于 <text class="discount-num">{{discount()}}折</text>
+    </view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="card info-card">
+    <view class="info-title">{{house.title}}</view>
+    <view class="info-location">📍 {{house.district}} · {{house.address}}</view>
+    
+    <view class="info-grid">
+      <view class="info-cell">
+        <text class="info-value">{{house.roomLayout || '-'}}</text>
+        <text class="info-label">户型</text>
+      </view>
+      <view class="info-cell">
+        <text class="info-value">{{house.area}}m²</text>
+        <text class="info-label">面积</text>
+      </view>
+      <view class="info-cell">
+        <text class="info-value">{{house.floor || '-'}}</text>
+        <text class="info-label">楼层</text>
+      </view>
+      <view class="info-cell">
+        <text class="info-value">{{house.orientation || '-'}}</text>
+        <text class="info-label">朝向</text>
+      </view>
+      <view class="info-cell">
+        <text class="info-value">{{house.buildingAge || '-'}}</text>
+        <text class="info-label">建成</text>
+      </view>
+      <view class="info-cell">
+        <text class="info-value">{{house.decoration || '-'}}</text>
+        <text class="info-label">装修</text>
+      </view>
+      <view class="info-cell">
+        <text class="info-value">{{house.pricePerSq ? house.pricePerSq + '元/m²' : '-'}}</text>
+        <text class="info-label">单价</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 拍卖时间 -->
+  <view class="card time-card">
+    <view class="card-header">拍卖时间</view>
+    <view class="time-row">
+      <text class="time-label">开拍时间</text>
+      <text class="time-value">{{formatTime(house.auctionStartTime)}}</text>
+    </view>
+    <view class="time-row">
+      <text class="time-label">结束时间</text>
+      <text class="time-value">{{formatTime(house.auctionEndTime)}}</text>
+    </view>
+    <view class="time-row" wx:if="{{countdown}}">
+      <text class="time-label">倒计时</text>
+      <text class="countdown">{{countdown}}</text>
+    </view>
+  </view>
+
+  <!-- 备注 -->
+  <view class="card" wx:if="{{house.remark}}">
+    <view class="card-header">备注信息</view>
+    <view class="remark-content">{{house.remark}}</view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="bottom-btn consult" bindtap="showConsult">
+      💬 咨询
+    </view>
+    <view class="bottom-btn goto" bindtap="gotoPlatform">
+      去{{house.platform === 'ali' ? '阿里' : '京东'}}出价 →
+    </view>
+  </view>
+
+  <!-- 企业微信咨询弹窗 -->
+  <view class="consult-modal" wx:if="{{showQrCode}}" bindtap="closeConsult">
+    <view class="consult-content" catchtap="">
+      <view class="consult-title">扫码添加企业微信</view>
+      <image class="qr-code" src="/assets/wechat-qr.png" mode="aspectFit"/>
+      <view class="consult-tip">专业法拍顾问一对一服务</view>
+    </view>
+  </view>
+</view>

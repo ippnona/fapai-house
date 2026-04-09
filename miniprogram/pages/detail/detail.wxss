@@ -1,0 +1,258 @@
+.page-detail {
+  padding-bottom: 140rpx;
+}
+
+/* 轮播 */
+.detail-swiper {
+  width: 100%;
+  height: 480rpx;
+}
+
+.swiper-img {
+  width: 100%;
+  height: 480rpx;
+}
+
+/* 状态横幅 */
+.status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 32rpx;
+  color: white;
+  font-size: 26rpx;
+}
+
+.status-banner.ongoing { background: var(--color-primary); }
+.status-banner.pending { background: var(--color-warning); }
+.status-banner.ended, .status-banner.withdrawn { background: var(--color-text-secondary); }
+.status-banner.sold { background: var(--color-success); }
+
+.status-text {
+  font-weight: 700;
+  font-size: 30rpx;
+}
+
+/* 价格卡片 */
+.price-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+}
+
+.price-main {
+  margin-bottom: 20rpx;
+}
+
+.price-label-sm {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.price-big {
+  display: flex;
+  align-items: baseline;
+  margin-top: 8rpx;
+}
+
+.price-big .price {
+  font-size: 56rpx;
+  font-weight: 800;
+  color: var(--color-primary-light);
+}
+
+.price-big .price-unit {
+  font-size: 28rpx;
+  color: var(--color-primary-light);
+  margin-left: 8rpx;
+}
+
+.price-row {
+  display: flex;
+  gap: 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.price-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.market-value {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: line-through;
+  font-size: 28rpx;
+}
+
+.current-value {
+  color: var(--color-warning);
+  font-weight: 600;
+  font-size: 28rpx;
+}
+
+.deposit-value {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 28rpx;
+}
+
+.discount-bar {
+  padding: 12rpx 20rpx;
+  background: rgba(233, 69, 96, 0.15);
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.discount-num {
+  color: var(--color-primary-light);
+  font-weight: 700;
+  font-size: 30rpx;
+}
+
+/* 信息卡片 */
+.info-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.info-location {
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  margin-top: 8rpx;
+}
+
+.info-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 24rpx;
+}
+
+.info-cell {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.info-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.info-label {
+  font-size: 22rpx;
+  color: var(--color-text-muted);
+  margin-top: 4rpx;
+}
+
+/* 时间卡片 */
+.card-header {
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 16rpx;
+  color: var(--color-text);
+}
+
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+}
+
+.time-label {
+  color: var(--color-text-secondary);
+  font-size: 26rpx;
+}
+
+.time-value {
+  color: var(--color-text);
+  font-size: 26rpx;
+}
+
+.countdown {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 28rpx;
+}
+
+.remark-content {
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+/* 底部操作栏 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  padding: 16rpx 24rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  background: white;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  gap: 16rpx;
+}
+
+.bottom-btn {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.bottom-btn.consult {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.bottom-btn.goto {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: white;
+}
+
+/* 咨询弹窗 */
+.consult-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.consult-content {
+  background: white;
+  border-radius: 24rpx;
+  padding: 48rpx;
+  text-align: center;
+  width: 560rpx;
+}
+
+.consult-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 32rpx;
+}
+
+.qr-code {
+  width: 360rpx;
+  height: 360rpx;
+  border: 2rpx solid var(--color-border);
+  border-radius: 12rpx;
+}
+
+.consult-tip {
+  margin-top: 24rpx;
+  color: var(--color-text-secondary);
+  font-size: 26rpx;
+}

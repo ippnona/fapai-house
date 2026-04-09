@@ -1,0 +1,25 @@
+[railway]
+deploymentZoneSelection = "auto"
+
+[railway.vars]
+NODE_ENV = "production"
+JWT_SECRET = "CHANGE_ME_USE_OPENCLAW"
+WECHAT_APPID = "wx1b250ad4e69950e8"
+WECHAT_SECRET = "1b2b39ba50e045a1b90bd6a460c7ca20"
+
+[[railway.services]]
+serviceName = "fapai-house-server"
+
+  [railway.services.fapai-house-server.build]
+  builder = "nixpacks"
+  builderVersion = "latest"
+
+  [railway.services.fapai-house-server.run]
+  command = "node app.js"
+  [railway.services.fapai-house-server.env]
+  PORT = 3000
+  MONGO_URI = "{{ .POSTGRES_URL || 'mongodb://127.0.0.1:27017/fapai_db' }}"
+  NODE_ENV = "production"
+  JWT_SECRET = "${JWT_SECRET}"
+  WECHAT_APPID = "${WECHAT_APPID}"
+  WECHAT_SECRET = "${WECHAT_SECRET}"

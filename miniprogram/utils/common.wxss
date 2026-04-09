@@ -1,0 +1,22 @@
+/* 项目公共样式 - utils/common.wxss */
+
+/* 弹性布局快捷类 */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-1 { flex: 1; }
+
+/* 文本 */
+.text-center { text-align: center; }
+.text-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.text-primary { color: var(--color-primary); }
+.text-muted { color: var(--color-text-muted); }
+
+/* 间距 */
+.mt-8 { margin-top: 8rpx; }
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mb-8 { margin-bottom: 8rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.p-24 { padding: 24rpx; }

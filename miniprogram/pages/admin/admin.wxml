@@ -1,0 +1,78 @@
+<view class="page-admin">
+  <!-- 数据概览 -->
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.totalUsers || 0}}</text>
+      <text class="stat-label">总用户</text>
+    </view>
+    <view class="stat-card warn">
+      <text class="stat-value">{{stats.pendingUsers || 0}}</text>
+      <text class="stat-label">待审核</text>
+    </view>
+    <view class="stat-card success">
+      <text class="stat-value">{{stats.activeMembers || 0}}</text>
+      <text class="stat-label">会员数</text>
+    </view>
+    <view class="stat-card primary">
+      <text class="stat-value">{{stats.totalHouses || 0}}</text>
+      <text class="stat-label">房源数</text>
+    </view>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="admin-tabs">
+    <view class="tab {{activeTab === 'users' ? 'active' : ''}}" bindtap="switchTab" data-tab="users">用户管理</view>
+    <view class="tab {{activeTab === 'houses' ? 'active' : ''}}" bindtap="switchTab" data-tab="houses">房源管理</view>
+    <view class="tab {{activeTab === 'contacts' ? 'active' : ''}}" bindtap="switchTab" data-tab="contacts">咨询管理</view>
+  </view>
+
+  <!-- 用户管理 -->
+  <view class="tab-content" wx:if="{{activeTab === 'users'}}">
+    <!-- 筛选 -->
+    <view class="admin-filter">
+      <view class="filter-btn {{userFilter === '' ? 'active' : ''}}" bindtap="filterUsers" data-val="">全部</view>
+      <view class="filter-btn {{userFilter === 'pending' ? 'active' : ''}}" bindtap="filterUsers" data-val="pending">待审核</view>
+      <view class="filter-btn {{userFilter === 'active' ? 'active' : ''}}" bindtap="filterUsers" data-val="active">已开通</view>
+    </view>
+    
+    <view class="user-card" wx:for="{{users}}" wx:key="_id">
+      <view class="user-info">
+        <view class="user-avatar">{{item.nickname[0] || '?'}}</view>
+        <view class="user-detail">
+          <text class="user-name">{{item.nickname}}</text>
+          <text class="user-phone">{{item.phone}}</text>
+        </view>
+        <view class="user-status membership-{{item.membership}}">
+          {{item.membership === 'pending' ? '待审核' : item.membership === 'active' ? '已开通' : '已拒绝'}}
+        </view>
+      </view>
+      <view class="user-actions" wx:if="{{item.membership === 'pending'}}">
+        <view class="action-btn approve" bindtap="approveUser" data-id="{{item._id}}">✅ 开通</view>
+        <view class="action-btn reject" bindtap="rejectUser" data-id="{{item._id}}">❌ 拒绝</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 房源管理 -->
+  <view class="tab-content" wx:if="{{activeTab === 'houses'}}">
+    <view class="add-house-btn" bindtap="goAddHouse">+ 添加房源</view>
+    <view class="house-admin-card" wx:for="{{houses}}" wx:key="_id">
+      <text class="ha-title">{{item.title}}</text>
+      <text class="ha-info">{{item.district}} · {{item.roomLayout}} · {{item.area}}m²</text>
+      <text class="ha-price">起拍 {{(item.auctionStartPrice/10000).toFixed(0)}}万</text>
+    </view>
+  </view>
+
+  <!-- 咨询管理 -->
+  <view class="tab-content" wx:if="{{activeTab === 'contacts'}}">
+    <view class="contact-card" wx:for="{{contacts}}" wx:key="_id">
+      <view class="ct-header">
+        <text class="ct-user">{{item.userId?.nickname || '未知'}}</text>
+        <text class="ct-time">{{formatDate(item.createdAt)}}</text>
+      </view>
+      <view class="ct-content">{{item.content}}</view>
+      <view class="ct-phone">📞 {{item.phone}}</view>
+    </view>
+    <view class="empty-hint" wx:if="{{contacts.length === 0}}">暂无咨询</view>
+  </view>
+</view>
