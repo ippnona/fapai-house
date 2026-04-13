@@ -9,11 +9,19 @@ Page({
     loading: false,
     noMore: false,
     
+    // Banner统计数据
+    stats: {
+      todayNew: 0,
+      ongoing: 0,
+      upcoming: 0
+    },
+    
     // 筛选
     filterDistrict: '',
+    filterSort: '',
+    filterSortLabel: '',
+    filterPropertyType: '',
     filterPrice: '',
-    filterStatus: '',
-    filterPlatform: '',
     showFilterPanel: false,
     filterType: '',
     filterOptions: [],
@@ -29,6 +37,13 @@ Page({
     },
     
     // 筛选选项
+    sortOptions: [
+      { label: '默认排序', value: 'default' },
+      { label: '最新发布', value: 'latest' },
+      { label: '拍卖时间', value: 'auctionTime' },
+      { label: '价格从低到高', value: 'priceAsc' },
+      { label: '价格从高到低', value: 'priceDesc' }
+    ],
     districtOptions: [
       { label: '全部区域', value: '' },
       { label: '南山', value: '南山' },
@@ -42,6 +57,11 @@ Page({
       { label: '盐田', value: '盐田' },
       { label: '大鹏', value: '大鹏' }
     ],
+    propertyTypeOptions: [
+      { label: '全部物业', value: '' },
+      { label: '住宅', value: '住宅' },
+      { label: '商业', value: '商业' }
+    ],
     priceOptions: [
       { label: '不限价格', value: '' },
       { label: '200万以下', value: '0-200' },
@@ -49,27 +69,17 @@ Page({
       { label: '500-1000万', value: '500-1000' },
       { label: '1000-2000万', value: '1000-2000' },
       { label: '2000万以上', value: '2000-999999' }
-    ],
-    statusOptions: [
-      { label: '全部状态', value: '' },
-      { label: '待拍卖', value: 'pending' },
-      { label: '拍卖中', value: 'ongoing' },
-      { label: '已结束', value: 'ended' },
-      { label: '已成交', value: 'sold' }
-    ],
-    platformOptions: [
-      { label: '全部来源', value: '' },
-      { label: '阿里拍卖', value: 'ali' },
-      { label: '京东拍卖', value: 'jd' }
     ]
   },
 
   onLoad() {
+    this.loadBannerStats()
     this.loadHouses()
   },
 
   onPullDownRefresh() {
     this.setData({ page: 1, houses: [], noMore: false })
+    this.loadBannerStats()
     this.loadHouses(() => {
       wx.stopPullDownRefresh()
     })
@@ -79,6 +89,29 @@ Page({
     if (!this.data.noMore && !this.data.loading) {
       this.loadHouses()
     }
+  },
+
+  // 加载Banner统计数据
+  loadBannerStats() {
+    app.request({ url: '/houses/stats' }).then(res => {
+      this.setData({ stats: res.data || {} })
+    }).catch(() => {})
+  },
+
+  // Banner点击筛选
+  filterByBanner(e) {
+    const type = e.currentTarget.dataset.type
+    let status = ''
+    if (type === 'ongoing') status = 'ongoing'
+    if (type === 'upcoming') status = 'pending'
+    // todayNew 需要后端按日期筛选，暂时用status
+    this.setData({ 
+      filterStatus: status,
+      page: 1,
+      houses: [],
+      noMore: false
+    })
+    this.loadHouses()
   },
 
   // 加载房源列表
@@ -94,13 +127,20 @@ Page({
     // 筛选参数
     if (this.data.filterDistrict) data.district = this.data.filterDistrict
     if (this.data.filterStatus) data.status = this.data.filterStatus
-    if (this.data.filterPlatform) data.platform = this.data.filterPlatform
+    if (this.data.filterPropertyType) data.propertyType = this.data.filterPropertyType
     if (this.data.filterPrice) {
       const [min, max] = this.data.filterPrice.split('-')
       data.minPrice = min * 10000
       data.maxPrice = max * 10000
     }
     if (this.data.keyword) data.keyword = this.data.keyword
+    
+    // 排序
+    if (this.data.filterSort === 'latest') data.sortBy = 'createdAt'
+    if (this.data.filterSort === 'auctionTime') data.sortBy = 'auctionStartTime'
+    if (this.data.filterSort === 'priceAsc') { data.sortBy = 'auctionStartPrice'; data.sortOrder = 'asc' }
+    if (this.data.filterSort === 'priceDesc') { data.sortBy = 'auctionStartPrice'; data.sortOrder = 'desc' }
+    // default = 按阿里提醒人数排序，由后端实现
 
     app.request({
       url: '/houses',
@@ -110,7 +150,10 @@ Page({
         ...h,
         // 价格转换为"万"
         auctionStartPrice: (h.auctionStartPrice / 10000).toFixed(0),
-        marketPrice: (h.marketPrice / 10000).toFixed(0)
+        marketPrice: (h.marketPrice / 10000).toFixed(0),
+        // 折扣
+        discount: h.marketPrice && h.auctionStartPrice 
+          ? (h.auctionStartPrice / h.marketPrice * 10).toFixed(1) : ''
       }))
       
       this.setData({
@@ -124,12 +167,6 @@ Page({
       this.setData({ loading: false })
       callback && callback()
     })
-  },
-
-  // 折扣计算
-  discount(item) {
-    if (!item.marketPrice || !item.auctionStartPrice) return ''
-    return (item.auctionStartPrice / item.marketPrice * 10).toFixed(1)
   },
 
   // 跳转详情
@@ -153,7 +190,6 @@ Page({
 
   // 搜索
   onSearchTap() {
-    // 简版：弹出输入框
     wx.showModal({
       title: '搜索房源',
       editable: true,
@@ -173,17 +209,17 @@ Page({
   },
 
   // 筛选面板
+  showSortFilter() { this.showFilter('sort', this.data.sortOptions) },
   showDistrictFilter() { this.showFilter('district', this.data.districtOptions) },
+  showPropertyTypeFilter() { this.showFilter('propertyType', this.data.propertyTypeOptions) },
   showPriceFilter() { this.showFilter('price', this.data.priceOptions) },
-  showStatusFilter() { this.showFilter('status', this.data.statusOptions) },
-  showPlatformFilter() { this.showFilter('platform', this.data.platformOptions) },
 
   showFilter(type, options) {
     let currentValue = ''
+    if (type === 'sort') currentValue = this.data.filterSort
     if (type === 'district') currentValue = this.data.filterDistrict
+    if (type === 'propertyType') currentValue = this.data.filterPropertyType
     if (type === 'price') currentValue = this.data.filterPrice
-    if (type === 'status') currentValue = this.data.filterStatus
-    if (type === 'platform') currentValue = this.data.filterPlatform
 
     this.setData({
       showFilterPanel: true,
@@ -197,10 +233,13 @@ Page({
     const { type, value, label } = e.currentTarget.dataset
     const updateData = { showFilterPanel: false }
     
-    if (type === 'district') updateData.filterDistrict = label === '全部区域' ? '' : label
+    if (type === 'sort') {
+      updateData.filterSort = value
+      updateData.filterSortLabel = label
+    }
+    if (type === 'district') updateData.filterDistrict = value === '' ? '' : label
+    if (type === 'propertyType') updateData.filterPropertyType = value
     if (type === 'price') updateData.filterPrice = value
-    if (type === 'status') updateData.filterStatus = label === '全部状态' ? '' : label
-    if (type === 'platform') updateData.filterPlatform = label === '全部来源' ? '' : label
     
     this.setData({ ...updateData, page: 1, houses: [], noMore: false })
     this.loadHouses()

@@ -102,7 +102,11 @@ Page({
   // === 房源管理 ===
   loadHouses() {
     app.request({ url: '/houses', data: { pageSize: 50 } }).then(res => {
-      this.setData({ houses: res.data.list })
+      const houses = res.data.list.map(h => ({
+        ...h,
+        auctionStartPriceWan: Math.round(h.auctionStartPrice / 10000)
+      }))
+      this.setData({ houses })
     })
   },
 
@@ -113,7 +117,11 @@ Page({
   // === 咨询管理 ===
   loadContacts() {
     app.request({ url: '/admin/contacts' }).then(res => {
-      this.setData({ contacts: res.data })
+      const contacts = res.data.map(c => ({
+        ...c,
+        userName: c.userId && c.userId.nickname ? c.userId.nickname : '未知'
+      }))
+      this.setData({ contacts })
     })
   },
 

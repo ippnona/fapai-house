@@ -4,50 +4,58 @@ const houseSchema = new mongoose.Schema({
   // 基础信息
   title: { type: String, required: true },
   city: { type: String, default: '深圳' },
-  district: { type: String, required: true }, // 区域：南山、福田、罗湖等
+  district: { type: String, required: true },
   address: { type: String, required: true },
   
   // 房屋信息
-  area: { type: Number, required: true },       // 面积 m²
-  roomLayout: { type: String, default: '' },     // 户型：3室2厅
-  floor: { type: String, default: '' },           // 楼层
-  buildingAge: { type: String, default: '' },    // 建成年代
-  orientation: { type: String, default: '' },    // 朝向
-  decoration: { type: String, default: '' },     // 装修情况
+  area: { type: Number, required: true },
+  roomLayout: { type: String, default: '' },
+  floor: { type: String, default: '' },
+  buildingAge: { type: String, default: '' },
+  orientation: { type: String, default: '' },
+  decoration: { type: String, default: '' },
+  
+  // 物业类型：住宅 / 写字楼 / 公寓 / 商铺
+  propertyType: { type: String, default: '' },
   
   // 价格信息
-  marketPrice: { type: Number, required: true }, // 市场价（元）
-  auctionStartPrice: { type: Number, required: true }, // 起拍价
-  currentPrice: { type: Number },                 // 当前价
-  deposit: { type: Number, required: true },      // 保证金
-  pricePerSq: { type: Number },                    // 单价（元/m²）
+  marketPrice: { type: Number, required: true },
+  auctionStartPrice: { type: Number, required: true },
+  currentPrice: { type: Number },
+  deposit: { type: Number, required: true },
+  pricePerSq: { type: Number },
   
   // 拍卖信息
   platform: { 
     type: String, 
     enum: ['ali', 'jd'],
     required: true 
-  }, // 来源平台
-  platformUrl: { type: String, required: true },  // 原始链接
-  auctionStartTime: { type: Date, required: true }, // 开拍时间
-  auctionEndTime: { type: Date, required: true },   // 结束时间
+  },
+  platformUrl: { type: String, required: true },
+  auctionStartTime: { type: Date, required: true },
+  auctionEndTime: { type: Date, required: true },
   status: { 
     type: String,
     enum: ['pending', 'ongoing', 'ended', 'sold', 'withdrawn'],
     default: 'pending'
-  }, // 拍卖状态
+  },
   
-  // 地图坐标（手动录入或批量导入）
+  // 地图坐标
   latitude: { type: Number },
   longitude: { type: Number },
   
-  // 图片（最多5张）
+  // 图片
   images: [{ type: String }],
+  
+  // 阿里提醒人数（用于排序）
+  watchCount: { type: Number, default: 0 },
+  
+  // 风险提示内容
+  riskLevel: { type: String, default: '中' },  // 低/中/高
   
   // 备注
   remark: { type: String, default: '' },
   
-  // 数据来源：ali / jd / manual
   source: {
     type: String,
     enum: ['ali', 'jd', 'manual'],
@@ -58,7 +66,6 @@ const houseSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
-// 保存前计算单价
 houseSchema.pre('save', function(next) {
   if (this.marketPrice && this.area) {
     this.pricePerSq = Math.round(this.marketPrice / this.area)

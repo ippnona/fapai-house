@@ -1,11 +1,74 @@
 .page-home {
   padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-bg);
 }
 
 /* 搜索栏 */
 .search-bar {
   padding: 16rpx 24rpx;
   background: var(--color-dark);
+}
+
+/* Banner 统计 */
+.banner-stats {
+  display: flex;
+  background: var(--color-dark);
+  padding: 0 24rpx 24rpx;
+  gap: 16rpx;
+}
+
+.banner-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 16rpx;
+  padding: 24rpx 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.banner-item.ongoing {
+  background: rgba(233, 69, 96, 0.15);
+  border-color: rgba(233, 69, 96, 0.3);
+}
+
+.banner-item.upcoming {
+  background: rgba(255, 165, 0, 0.12);
+  border-color: rgba(255, 165, 0, 0.25);
+}
+
+.banner-num {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+}
+
+.banner-item.ongoing .banner-num {
+  color: #ff4466;
+}
+
+.banner-item.upcoming .banner-num {
+  color: #ffaa33;
+}
+
+.banner-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 8rpx;
+}
+
+/* 房源卡片 - 关注人数 */
+.house-watchers {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 20rpx;
+  padding: 4rpx 10rpx;
+  border-radius: 20rpx;
 }
 
 .search-input {

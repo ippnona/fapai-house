@@ -1,47 +1,81 @@
 <view class="page-map">
+  <!-- 顶部筛选栏 -->
+  <view class="map-toolbar">
+    <view class="toolbar-btn" bindtap="showDistrictPicker">
+      📍 {{activeDistrict || '全部区域'}}
+    </view>
+    <view class="toolbar-btn" bindtap="showStatusPicker">
+      🏷 {{activeStatus === 'ongoing' ? '正在拍卖' : activeStatus === 'pending' ? '即将拍卖' : activeStatus === 'ended' ? '已结束' : '全部状态'}}
+    </view>
+    <view class="toolbar-btn" bindtap="{{viewMode === 'clusters' ? 'loadPoints' : 'backToClusters'}}">
+      {{viewMode === 'clusters' ? '🔍 查看详情' : '🗺 返回全图'}}
+    </view>
+  </view>
+
+  <!-- 聚合数据展示（顶部悬浮） -->
+  <view class="cluster-summary" wx:if="{{clusters.length > 0 && viewMode === 'clusters'}}">
+    <scroll-view scroll-x class="cluster-scroll">
+      <view class="cluster-tags">
+        <view class="cluster-tag" wx:for="{{clusters}}" wx:key="_id" bindtap="onClusterTap" data-index="{{index}}">
+          <text class="ct-name">{{item._id}}</text>
+          <text class="ct-total">{{item.total}}套</text>
+          <view class="ct-detail">
+            <text class="ongoing-dot"></text>{{item.ongoing}}
+            <text class="upcoming-dot"></text>{{item.upcoming}}
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
   <!-- 地图 -->
-  <map 
-    id="houseMap"
-    class="house-map"
-    latitude="{{latitude}}" 
-    longitude="{{longitude}}" 
-    scale="11"
+  <map
+    id="map"
+    class="map-view"
+    latitude="{{latitude}}"
+    longitude="{{longitude}}"
     markers="{{markers}}"
     bindmarkertap="onMarkerTap"
+    bindtap="onMapTap"
     show-location
-  />
+    enable-3D
+    scale="11"
+  ></map>
 
-  <!-- 筛选条 -->
-  <view class="map-filter">
-    <view class="map-filter-item {{activeDistrict ? 'active' : ''}}" bindtap="showDistrictPicker">
-      {{activeDistrict || '区域'}}
+  <!-- 聚合说明 -->
+  <view class="map-legend" wx:if="{{viewMode === 'clusters'}}">
+    <view class="legend-item">
+      <text class="ongoing-dot"></text> 正在拍卖
     </view>
-    <view class="map-filter-item {{activePriceRange ? 'active' : ''}}" bindtap="showPricePicker">
-      {{activePriceRange || '价格'}}
-    </view>
-  </view>
-
-  <!-- 底部房源卡片 -->
-  <view class="bottom-card" wx:if="{{selectedHouse}}">
-    <view class="bottom-card-inner" bindtap="goDetail">
-      <view class="bc-title">{{selectedHouse.title}}</view>
-      <view class="bc-info">
-        <text>{{selectedHouse.district}}</text>
-        <text class="meta-dot">·</text>
-        <text>{{selectedHouse.roomLayout || '-'}}</text>
-        <text class="meta-dot">·</text>
-        <text>{{selectedHouse.area}}m²</text>
-      </view>
-      <view class="bc-price">
-        <text class="bc-auction-price">起拍 {{formatWan(selectedHouse.auctionStartPrice)}}万</text>
-        <text class="bc-market-price">市场 {{formatWan(selectedHouse.marketPrice)}}万</text>
-        <text class="bc-status tag tag-{{selectedHouse.status}}">{{statusMap[selectedHouse.status]}}</text>
-      </view>
+    <view class="legend-item">
+      <text class="upcoming-dot"></text> 即将拍卖
     </view>
   </view>
 
-  <!-- 无数据 -->
-  <view class="map-empty" wx:if="{{!loading && markers.length === 0}}">
-    <text>暂无地图数据</text>
+  <!-- 房源详情弹窗 -->
+  <view class="house-popup" wx:if="{{selectedHouse && viewMode === 'points'}}" catchtap="">
+    <view class="popup-header">
+      <text class="popup-title">{{selectedHouse.title}}</text>
+      <text class="popup-tag tag-{{selectedHouse.status}}">{{statusMap[selectedHouse.status]}}</text>
+    </view>
+    <view class="popup-info">
+      📍 {{selectedHouse.district}} · {{selectedHouse.address}}
+    </view>
+    <view class="popup-meta">
+      {{selectedHouse.roomLayout || ''}} {{selectedHouse.area}}m²
+      <text wx:if="{{selectedHouse.propertyType}}"> · {{selectedHouse.propertyType}}</text>
+    </view>
+    <view class="popup-price">
+      <text class="popup-auction">{{formatWan(selectedHouse.auctionStartPrice)}}万</text>
+      <text class="popup-market">{{formatWan(selectedHouse.marketPrice)}}万市场价</text>
+    </view>
+    <view class="popup-btn" bindtap="goDetail">查看详情 →</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="map-loading" wx:if="{{loading}}">
+    <view class="loading-dots">
+      <text></text><text></text><text></text>
+    </view>
   </view>
 </view>

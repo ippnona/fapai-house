@@ -13,6 +13,7 @@
   <view class="status-banner {{house.status}}">
     <view class="status-text">{{statusMap[house.status]}}</view>
     <view class="status-platform">{{house.platform === 'ali' ? '阿里拍卖' : '京东拍卖'}}</view>
+    <view class="status-watches" wx:if="{{house.watchCount}}">👁 {{house.watchCount}}人设置提醒</view>
   </view>
 
   <!-- 价格区域 -->
@@ -49,6 +50,10 @@
     <view class="info-location">📍 {{house.district}} · {{house.address}}</view>
     
     <view class="info-grid">
+      <view class="info-cell" wx:if="{{house.propertyType}}">
+        <text class="info-value {{house.propertyType === '住宅' ? 'prop-residence' : 'prop-commercial'}}">{{house.propertyType}}</text>
+        <text class="info-label">物业类型</text>
+      </view>
       <view class="info-cell">
         <text class="info-value">{{house.roomLayout || '-'}}</text>
         <text class="info-label">户型</text>
@@ -97,9 +102,26 @@
     </view>
   </view>
 
+  <!-- 风险提示 -->
+  <view class="card risk-card">
+    <view class="risk-header">
+      <text class="risk-icon">⚠️</text>
+      <text class="risk-title">风险提示与免责条款</text>
+    </view>
+    <view class="risk-content">
+      <text class="risk-text">
+        1. 本平台展示的法拍房源信息均来源于阿里拍卖、京东拍卖等公开渠道，仅供参考。\n
+        2. 房源的具体情况（包括但不限于房屋现状、产权纠纷、欠费情况、腾退风险等）以拍卖平台公示的标的物介绍、竞买公告及法院相关文件为准。\n
+        3. 竞买前请您务必实地看样，详细了解标的物情况，核实相关税费及隐性费用。\n
+        4. 本平台不对竞拍结果承担任何法律责任，购房风险由竞买人自行承担。\n
+        5. 如有疑问，请咨询专业法拍服务机构或法律顾问。
+      </text>
+    </view>
+  </view>
+
   <!-- 备注 -->
   <view class="card" wx:if="{{house.remark}}">
-    <view class="card-header">备注信息</view>
+    <view class="card-header">房源备注</view>
     <view class="remark-content">{{house.remark}}</view>
   </view>
 
@@ -107,6 +129,9 @@
   <view class="bottom-bar">
     <view class="bottom-btn consult" bindtap="showConsult">
       💬 咨询
+    </view>
+    <view class="bottom-btn watch" bindtap="toggleWatch">
+      {{isWatched ? '✅ 已提醒' : '🔔 提醒我'}}
     </view>
     <view class="bottom-btn goto" bindtap="gotoPlatform">
       去{{house.platform === 'ali' ? '阿里' : '京东'}}出价 →

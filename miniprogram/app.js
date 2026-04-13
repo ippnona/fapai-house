@@ -1,8 +1,7 @@
 // 全局配置 — 支持开发/生产环境自动切换
-// 环境变量: NODE_ENV=production 时自动切换到生产接口
+// 小程序环境没有 process，直接用开发环境
 
-const ENV = process.env.NODE_ENV || 'development'
-const IS_PROD = ENV === 'production'
+const IS_PROD = false
 
 // ⚠️ 部署前请确认以下 URL 已更新为你的实际后端地址
 const BASE_URL = IS_PROD

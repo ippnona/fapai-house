@@ -59,7 +59,7 @@
     <view class="house-admin-card" wx:for="{{houses}}" wx:key="_id">
       <text class="ha-title">{{item.title}}</text>
       <text class="ha-info">{{item.district}} · {{item.roomLayout}} · {{item.area}}m²</text>
-      <text class="ha-price">起拍 {{(item.auctionStartPrice/10000).toFixed(0)}}万</text>
+      <text class="ha-price">起拍 {{item.auctionStartPriceWan}}万</text>
     </view>
   </view>
 
@@ -67,7 +67,7 @@
   <view class="tab-content" wx:if="{{activeTab === 'contacts'}}">
     <view class="contact-card" wx:for="{{contacts}}" wx:key="_id">
       <view class="ct-header">
-        <text class="ct-user">{{item.userId?.nickname || '未知'}}</text>
+        <text class="ct-user">{{item.userName || '未知'}}</text>
         <text class="ct-time">{{formatDate(item.createdAt)}}</text>
       </view>
       <view class="ct-content">{{item.content}}</view>
