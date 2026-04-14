@@ -27,7 +27,7 @@ const seed = streets.map((s,i) => ({
   platformUrl: 'https://sf.taobao.com/item.htm?id='+(900000+i),
   auctionStartTime: new Date(now+i*86400000),
   auctionEndTime: new Date(now+i*86400000+14400000),
-  source:'auto', riskLevel: ['low','medium','high'][i%3],
+  source:'manual', riskLevel: ['low','medium','high'][i%3],
   userId: null, createdAt: new Date(), updatedAt: new Date(),
   address: '深圳市'+districts[i%districts.length]+s
 }))
