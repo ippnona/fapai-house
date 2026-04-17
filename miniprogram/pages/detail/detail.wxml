@@ -21,34 +21,114 @@
     <view class="price-main">
       <text class="price-label-sm">起拍价</text>
       <view class="price-big">
-        <text class="price">{{formatPrice(house.auctionStartPrice)}}</text>
-        <text class="price-unit">万</text>
+        <text class="price">{{house.displayStartPrice}}</text>
       </view>
     </view>
     <view class="price-row">
       <view class="price-item">
         <text class="price-label-sm">市场价</text>
-        <text class="market-value">{{formatPrice(house.marketPrice)}}万</text>
+        <text class="market-value">{{house.displayMarketPrice}}</text>
       </view>
       <view class="price-item" wx:if="{{house.currentPrice}}">
         <text class="price-label-sm">当前价</text>
-        <text class="current-value">{{formatPrice(house.currentPrice)}}万</text>
+        <text class="current-value">{{house.displayCurrentPrice}}</text>
       </view>
       <view class="price-item">
         <text class="price-label-sm">保证金</text>
-        <text class="deposit-value">{{formatPrice(house.deposit)}}万</text>
+        <text class="deposit-value">{{house.displayDeposit}}</text>
       </view>
     </view>
     <view class="discount-bar" wx:if="{{house.marketPrice > house.auctionStartPrice}}">
-      低于市场价 <text class="discount-num">{{discountOff()}}</text>，相当于 <text class="discount-num">{{discount()}}折</text>
+      低于市场价 <text class="discount-num">{{house.displayDiscountOff}}</text>，
+      相当于 <text class="discount-num">{{house.displayDiscount}}折</text>
+    </view>
+  </view>
+
+  <!-- 🏛️ 法院公告信息（新增） -->
+  <view class="card court-card" wx:if="{{house.courtInfo && house.courtInfo.courtName}}">
+    <view class="card-header">
+      <text class="card-header-icon">🏛️</text>
+      法院公告信息
+    </view>
+    <view class="court-grid">
+      <view class="court-item" wx:if="{{house.courtInfo.courtName}}">
+        <view class="court-label">法院</view>
+        <view class="court-value">{{house.courtInfo.courtName}}</view>
+      </view>
+      <view class="court-item" wx:if="{{house.courtInfo.caseNumber}}">
+        <view class="court-label">案号</view>
+        <view class="court-value">{{house.courtInfo.caseNumber}}</view>
+      </view>
+      <view class="court-item" wx:if="{{house.courtInfo.applicant}}">
+        <view class="court-label">申请执行人</view>
+        <view class="court-value">{{house.courtInfo.applicant}}</view>
+      </view>
+      <view class="court-item" wx:if="{{house.courtInfo.respondent}}">
+        <view class="court-label">被执行人</view>
+        <view class="court-value">{{house.courtInfo.respondent}}</view>
+      </view>
+      <view class="court-item" wx:if="{{house.courtInfo.mortgageHolder}}">
+        <view class="court-label">抵押权人</view>
+        <view class="court-value">{{house.courtInfo.mortgageHolder}}</view>
+      </view>
+      <view class="court-item" wx:if="{{house.courtInfo.occupancyStatus}}">
+        <view class="court-label">占用情况</view>
+        <view class="court-value {{house.courtInfo.occupancyStatus.includes('有人') ? 'warn-text' : ''}}">{{house.courtInfo.occupancyStatus}}</view>
+      </view>
+      <view class="court-item" wx:if="{{house.courtInfo.leasingStatus}}">
+        <view class="court-label">租赁情况</view>
+        <view class="court-value">{{house.courtInfo.leasingStatus}}</view>
+      </view>
+      <view class="court-item" wx:if="{{house.courtInfo.outstandingFees}}">
+        <view class="court-label">欠费情况</view>
+        <view class="court-value warn-text">{{house.courtInfo.outstandingFees}}</view>
+      </view>
+      <view class="court-item full" wx:if="{{house.courtInfo.transferRestrictions}}">
+        <view class="court-label">过户/限购说明</view>
+        <view class="court-value">{{house.courtInfo.transferRestrictions}}</view>
+      </view>
+      <view class="court-item full" wx:if="{{house.courtInfo.storagePeriod}}">
+        <view class="court-label">保管/腾退期限</view>
+        <view class="court-value">{{house.courtInfo.storagePeriod}}</view>
+      </view>
+      <view class="court-item full tax-payer">
+        <view class="court-label">税费承担</view>
+        <view class="court-value tax-badge">{{house.courtInfo.taxBearPayer || '买家'}}</view>
+        <view class="court-value sub" wx:if="{{house.courtInfo.buyerBurdenNote}}">{{house.courtInfo.buyerBurdenNote}}</view>
+      </view>
+    </view>
+    <view class="court-disclaimer">* 以上信息以拍卖平台公示为准</view>
+  </view>
+
+  <!-- 优缺点提炼（新增） -->
+  <view class="card pros-cons-card" wx:if="{{house.prosCons}}">
+    <view class="card-header">
+      <text class="card-header-icon">📋</text>
+      综合评估
+    </view>
+    <view class="pros-summary" wx:if="{{house.prosCons.summary}}">
+      {{house.prosCons.summary}}
+    </view>
+    <view class="pros-cons-body">
+      <view class="pros-list" wx:if="{{house.prosCons.pros && house.prosCons.pros.length > 0}}">
+        <view class="pros-cons-title green">✅ 优势</view>
+        <view class="pros-item" wx:for="{{house.prosCons.pros}}" wx:key="*this">
+          <text class="pros-dot">·</text> {{item}}
+        </view>
+      </view>
+      <view class="cons-list" wx:if="{{house.prosCons.cons && house.prosCons.cons.length > 0}}">
+        <view class="pros-cons-title red">⚠️ 风险</view>
+        <view class="cons-item" wx:for="{{house.prosCons.cons}}" wx:key="*this">
+          <text class="cons-dot">·</text> {{item}}
+        </view>
+      </view>
     </view>
   </view>
 
   <!-- 基本信息 -->
   <view class="card info-card">
     <view class="info-title">{{house.title}}</view>
-    <view class="info-location">📍 {{house.district}} · {{house.address}}</view>
-    
+    <view class="info-location">📍 {{house.district}}{{house.address ? ' · ' + house.address : ''}}</view>
     <view class="info-grid">
       <view class="info-cell" wx:if="{{house.propertyType}}">
         <text class="info-value {{house.propertyType === '住宅' ? 'prop-residence' : 'prop-commercial'}}">{{house.propertyType}}</text>
@@ -59,7 +139,7 @@
         <text class="info-label">户型</text>
       </view>
       <view class="info-cell">
-        <text class="info-value">{{house.area}}m²</text>
+        <text class="info-value">{{house.area ? house.area + 'm²' : '-'}}</text>
         <text class="info-label">面积</text>
       </view>
       <view class="info-cell">
@@ -87,7 +167,7 @@
 
   <!-- 拍卖时间 -->
   <view class="card time-card">
-    <view class="card-header">拍卖时间</view>
+    <view class="card-header">⏰ 拍卖时间</view>
     <view class="time-row">
       <text class="time-label">开拍时间</text>
       <text class="time-value">{{formatTime(house.auctionStartTime)}}</text>
@@ -110,40 +190,37 @@
     </view>
     <view class="risk-content">
       <text class="risk-text">
-        1. 本平台展示的法拍房源信息均来源于阿里拍卖、京东拍卖等公开渠道，仅供参考。\n
-        2. 房源的具体情况（包括但不限于房屋现状、产权纠纷、欠费情况、腾退风险等）以拍卖平台公示的标的物介绍、竞买公告及法院相关文件为准。\n
-        3. 竞买前请您务必实地看样，详细了解标的物情况，核实相关税费及隐性费用。\n
-        4. 本平台不对竞拍结果承担任何法律责任，购房风险由竞买人自行承担。\n
-        5. 如有疑问，请咨询专业法拍服务机构或法律顾问。
+1. 本平台展示的法拍房源信息来源于阿里拍卖、京东拍卖等公开渠道，仅供参考。
+2. 房源具体情况（房屋现状、产权纠纷、欠费、腾退风险等）以拍卖平台公示的标的物介绍、竞买公告及法院相关文件为准。
+3. 竞买前请您务必实地看样，详细了解标的物情况，核实相关费用。
+4. 本平台不对竞拍结果承担任何法律责任，购房风险由竞买人自行承担。
+5. 如有疑问，请咨询专业法拍服务机构或法律顾问。
       </text>
     </view>
   </view>
 
   <!-- 备注 -->
   <view class="card" wx:if="{{house.remark}}">
-    <view class="card-header">房源备注</view>
+    <view class="card-header">📝 房源备注</view>
     <view class="remark-content">{{house.remark}}</view>
   </view>
+
+  <!-- 底部间距（给底部栏留空间） -->
+  <view style="height: 120px;"></view>
 
   <!-- 底部操作栏 -->
   <view class="bottom-bar">
     <view class="bottom-btn consult" bindtap="showConsult">
       💬 咨询
     </view>
+    <view class="bottom-btn calc {{house.enableCalculator ? 'calc-active' : ''}}" bindtap="goCalculator" wx:if="{{house.enableCalculator || (userInfo && userInfo.role === 'admin')}}">
+      🧮 成本计算
+    </view>
     <view class="bottom-btn watch" bindtap="toggleWatch">
       {{isWatched ? '✅ 已提醒' : '🔔 提醒我'}}
     </view>
     <view class="bottom-btn goto" bindtap="gotoPlatform">
       去{{house.platform === 'ali' ? '阿里' : '京东'}}出价 →
-    </view>
-  </view>
-
-  <!-- 企业微信咨询弹窗 -->
-  <view class="consult-modal" wx:if="{{showQrCode}}" bindtap="closeConsult">
-    <view class="consult-content" catchtap="">
-      <view class="consult-title">扫码添加企业微信</view>
-      <image class="qr-code" src="/assets/wechat-qr.png" mode="aspectFit"/>
-      <view class="consult-tip">专业法拍顾问一对一服务</view>
     </view>
   </view>
 </view>

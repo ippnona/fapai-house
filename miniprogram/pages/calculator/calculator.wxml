@@ -1,0 +1,131 @@
+<view class="page-calc">
+  <view class="calc-header">
+    <view class="calc-title">🧮 购房成本计算器</view>
+    <view class="calc-subtitle">法拍房费用一键测算，辅拍费/税费/平台费全包含</view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="card">
+    <view class="card-header">🏷️ 基本信息</view>
+    <view class="form-item">
+      <view class="form-label">成交价格 <text class="required">*</text></view>
+      <view class="input-row">
+        <input class="form-input" type="digit" placeholder="例如：500" bindinput="onPriceInput" value="{{price}}"/>
+        <text class="input-unit">万元</text>
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="form-label">房屋面积</view>
+      <view class="input-row">
+        <input class="form-input" type="digit" placeholder="例如：100" bindinput="onAreaInput" value="{{area}}"/>
+        <text class="input-unit">㎡</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 费用承担 -->
+  <view class="card">
+    <view class="card-header">💰 费用承担设置</view>
+    <view class="form-item">
+      <view class="form-label">税费承担方</view>
+      <view class="radio-group">
+        <view class="radio-item {{taxPayer === 'buyer' ? 'active' : ''}}" bindtap="setTaxPayer" data-val="buyer">买家承担</view>
+        <view class="radio-item {{taxPayer === 'seller' ? 'active' : ''}}" bindtap="setTaxPayer" data-val="seller">卖家承担</view>
+        <view class="radio-item {{taxPayer === 'each' ? 'active' : ''}}" bindtap="setTaxPayer" data-val="each">各付各税</view>
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="form-label">贷款方式</view>
+      <view class="radio-group">
+        <view class="radio-item {{hasLoan ? false : 'active'}}" bindtap="setLoan" data-val="false">全款</view>
+        <view class="radio-item {{hasLoan ? 'active' : ''}}" bindtap="setLoan" data-val="true">贷款</view>
+      </view>
+    </view>
+    <view class="form-item" wx:if="{{hasLoan}}">
+      <view class="form-label">首付比例</view>
+      <view class="radio-group">
+        <view class="radio-item {{downPaymentRatio === 30 ? 'active' : ''}}" bindtap="setDownPayment" data-val="30">3成</view>
+        <view class="radio-item {{downPaymentRatio === 50 ? 'active' : ''}}" bindtap="setDownPayment" data-val="50">5成</view>
+        <view class="radio-item {{downPaymentRatio === 70 ? 'active' : ''}}" bindtap="setDownPayment" data-val="70">7成</view>
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="form-label">其他费用估算（欠费/腾退等）</view>
+      <view class="input-row">
+        <input class="form-input" type="digit" placeholder="0" bindinput="onOtherInput" value="{{otherFees}}"/>
+        <text class="input-unit">元</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 计算结果 -->
+  <view class="card result-card" wx:if="{{result}}">
+    <view class="card-header">
+      <text>📊 费用明细</text>
+      <text class="result-hint">单位：元</text>
+    </view>
+    <view class="result-list">
+      <view class="result-item main">
+        <view class="result-label">🏠 房屋成交价</view>
+        <view class="result-value">{{result.priceStr}}元</view>
+      </view>
+      <view class="result-item">
+        <view class="result-label">🛠️ 辅拍服务费 <text class="fee-note">（1%，最低5万）</text></view>
+        <view class="result-value orange">{{result.agencyFeeStr}}元</view>
+      </view>
+      <view class="result-item" wx:if="{{result.deedTax > 0}}">
+        <view class="result-label">📄 契税 <text class="fee-note">（{{result.deedTaxRate}}）</text></view>
+        <view class="result-value">{{result.deedTaxStr}}元</view>
+      </view>
+      <view class="result-item" wx:if="{{result.personalTax > 0}}">
+        <view class="result-label">📋 个税 <text class="fee-note">（1%）</text></view>
+        <view class="result-value">{{result.personalTaxStr}}元</view>
+      </view>
+      <view class="result-item" wx:if="{{result.platformFee > 0}}">
+        <view class="result-label">🌐 平台服务费 <text class="fee-note">（0.5%）</text></view>
+        <view class="result-value">{{result.platformFeeStr}}元</view>
+      </view>
+      <view class="result-item" wx:if="{{result.otherFees > 0}}">
+        <view class="result-label">⚠️ 其他费用</view>
+        <view class="result-value orange">{{result.otherFeesStr}}元</view>
+      </view>
+    </view>
+    <view class="result-divider"></view>
+    <view class="result-total">
+      <view class="total-label">💵 实际总支出</view>
+      <view class="total-value">
+        <text class="total-num">{{result.totalStr}}</text>
+        <text class="total-unit">元</text>
+      </view>
+    </view>
+    <view class="result-summary">
+      <view class="summary-item">
+        <text class="summary-label">单价：</text>
+        <text class="summary-value">{{result.unitPrice}}元/㎡</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-label">相比市价节省：</text>
+        <text class="summary-value green" wx:if="{{result.saving > 0}}">{{result.savingStr}}元</text>
+        <text class="summary-value" wx:else>—</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 计算按钮 -->
+  <view class="calc-action">
+    <button class="btn-calc" bindtap="calculate">开始计算</button>
+  </view>
+
+  <!-- 费用说明 -->
+  <view class="card info-card">
+    <view class="card-header">📖 费用说明</view>
+    <view class="info-text">
+      <view class="info-row">🛠️ <b>辅拍服务费</b>：起拍价 × 1%，低于5万按5万计算</view>
+      <view class="info-row">📄 <b>契税</b>：买家支付，90㎡以下按成交价1%，90㎡以上按1.5%</view>
+      <view class="info-row">📋 <b>个税</b>：通常由被执行人（卖家）承担</view>
+      <view class="info-row">🌐 <b>平台服务费</b>：阿里/京东收取成交价的0.5%，部分房源由买家承担</view>
+      <view class="info-row">⚠️ <b>其他费用</b>：可能包括欠缴物业费、水电气费、腾退费等</view>
+    </view>
+    <view class="info-note">* 以上为估算，实际费用以拍卖平台公示和相关部门计算为准</view>
+  </view>
+</view>

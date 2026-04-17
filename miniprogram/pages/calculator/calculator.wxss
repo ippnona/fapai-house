@@ -1,0 +1,48 @@
+page { background: #f5f5f7; }
+.page-calc { padding: 16px 12px 40px; }
+.calc-header { text-align: center; margin-bottom: 16px; }
+.calc-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+.calc-subtitle { font-size: 13px; color: #888; }
+
+.card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.card-header { font-size: 15px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+.result-hint { font-size: 11px; color: #999; font-weight: 400; }
+
+.form-item { margin-bottom: 14px; }
+.form-item:last-child { margin-bottom: 0; }
+.form-label { font-size: 13px; color: #555; margin-bottom: 8px; font-weight: 500; }
+.required { color: #e94560; }
+.input-row { display: flex; align-items: center; gap: 8px; }
+.form-input { flex: 1; border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 10px 12px; font-size: 15px; background: #fafafa; }
+.input-unit { font-size: 14px; color: #888; width: 30px; flex-shrink: 0; }
+
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-item { flex: 1; min-width: 70px; padding: 8px 0; text-align: center; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; color: #666; transition: all 0.15s; }
+.radio-item.active { border-color: #1a73e8; background: #e8f0fe; color: #1a73e8; font-weight: 600; }
+
+/* 结果 */
+.result-list { display: flex; flex-direction: column; gap: 10px; }
+.result-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+.result-item.main { padding-bottom: 10px; border-bottom: 1rpx solid #f0f0f0; }
+.result-label { font-size: 13px; color: #555; flex: 1; }
+.result-value { font-size: 14px; color: #333; font-weight: 600; }
+.result-value.orange { color: #e67e22; }
+.fee-note { font-size: 11px; color: #aaa; font-weight: 400; }
+.result-divider { height: 1px; background: #f0f0f0; margin: 12px 0; }
+.result-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.total-label { font-size: 15px; font-weight: 700; color: #1a1a2e; }
+.total-value { display: flex; align-items: baseline; gap: 4px; }
+.total-num { font-size: 28px; font-weight: 700; color: #e94560; }
+.total-unit { font-size: 14px; color: #888; }
+.result-summary { display: flex; gap: 16px; padding: 12px; background: #f8f9fb; border-radius: 8px; }
+.summary-item { display: flex; align-items: center; font-size: 12px; }
+.summary-label { color: #888; }
+.summary-value { color: #333; font-weight: 600; }
+.summary-value.green { color: #27ae60; }
+
+.calc-action { margin: 16px 0; }
+.btn-calc { width: 100%; height: 48px; background: linear-gradient(135deg, #e94560, #c0392b); color: white; border-radius: 24px; font-size: 16px; font-weight: 700; border: none; line-height: 48px; }
+
+.info-text { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.info-row { font-size: 12px; color: #555; line-height: 1.6; }
+.info-note { font-size: 11px; color: #bbb; border-top: 1rpx solid #f0f0f0; padding-top: 10px; }

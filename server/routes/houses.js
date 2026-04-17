@@ -211,3 +211,14 @@ router.post('/:id/watch', authMiddleware, async (req, res) => {
 })
 
 module.exports = router
+
+// PUT /api/houses/:id — 更新房源
+router.put('/:id', async (req, res) => {
+  try {
+    const house = await House.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    if (!house) return res.status(404).json({ code: 404, msg: '房源不存在' })
+    res.json({ code: 0, data: house })
+  } catch (err) {
+    res.status(500).json({ code: 500, msg: '更新失败：' + err.message })
+  }
+})

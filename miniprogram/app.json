@@ -6,7 +6,9 @@
     "pages/my/my",
     "pages/login/login",
     "pages/register/register",
-    "pages/admin/admin"
+    "pages/admin/admin",
+    "pages/calculator/calculator",
+    "pages/news/news"
   ],
   "window": {
     "backgroundTextStyle": "light",

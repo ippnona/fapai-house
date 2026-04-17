@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth')
 const houseRoutes = require('./routes/houses')
 const adminRoutes = require('./routes/admin')
 const contactRoutes = require('./routes/contact')
+const newsRoutes = require('./routes/news')
 
 const app = express()
 
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/houses', houseRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/contact', contactRoutes)
+app.use('/api/news', newsRoutes)
 
 // 健康检查
 app.get('/api/health', (req, res) => {

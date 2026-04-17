@@ -1,6 +1,6 @@
 /**
- * 阿里拍卖深圳法拍房爬虫 v2
- * 改进：更稳定的页面等待 + 调试输出
+ * 阿里拍卖深圳法拍房爬虫 v3
+ * 注入真实 Cookies，绕过登录墙
  */
 const { chromium } = require('playwright')
 const mongoose = require('mongoose')
@@ -8,6 +8,15 @@ const House = require('../models/House')
 
 const DISTRICTS = ['南山', '福田', '罗湖', '宝安', '龙岗', '龙华', '光明', '坪山', '盐田', '大鹏']
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/fapai-house'
+
+// 你的淘宝登录态 Cookies
+const COOKIES = [
+  { name: '_m_h5_tk', value: 'b9847f3a3227cb4557df5da2ee95aaa2_1776147348494', domain: '.taobao.com' },
+  { name: 'cookie1', value: 'URtFeEREX6Gn+0NcIhEuL7lGxKh4Lvy+AUW1asqg/Iw==', domain: '.taobao.com' },
+  { name: '_tb_token_', value: '3e8Q9v7K5m', domain: '.taobao.com' },
+  { name: 'thw', value: 'cn', domain: '.taobao.com' },
+  { name: ' lid', value: 'your_username', domain: '.taobao.com' },
+]
 
 async function connectDB() {
   if (mongoose.connection.readyState === 0) await mongoose.connect(MONGO_URI)
@@ -39,11 +48,11 @@ function parsePropertyType(title) {
 }
 
 async function main() {
-  console.log('========== 阿里拍卖爬虫 v2 ==========')
-  console.log(`时间: ${new Date().toLocaleString('zh-CN')}`)
+  console.log('========== 阿里拍卖爬虫 v3（登录态版）==========')
+  console.log('时间:', new Date().toLocaleString('zh-CN'))
 
   const browser = await chromium.launch({
-    headless: true,
+    headless: true, // 无头模式（服务器环境）
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   })
 
@@ -52,9 +61,18 @@ async function main() {
     viewport: { width: 1920, height: 900 }
   })
 
+  // 注入登录态 Cookies
+  console.log('注入登录态 Cookies...')
+  for (const c of COOKIES) {
+    try {
+      await context.addCookies([{ name: c.name, value: c.value, domain: c.domain, path: '/' }])
+      console.log('  ✅', c.name)
+    } catch (e) {
+      console.log('  ⚠️', c.name, ':', e.message)
+    }
+  }
+
   const page = await context.newPage()
-  
-  // 收集所有 console 日志
   page.on('console', msg => {
     if (msg.type() === 'error') console.log('  [浏览器错误]', msg.text())
   })
@@ -62,65 +80,41 @@ async function main() {
   const results = []
 
   try {
-    // 方式1：直接访问带搜索条件的页面
+    // 淘宝法拍搜索列表页（深圳 + 房产）
     const searchUrl = 'https://sf.taobao.com/item_list.htm?spm=a213w.7398504.filter.3.F&city=440300&category=20074&sort=default'
-    console.log(`🔗 访问: ${searchUrl}`)
+    console.log('访问:', searchUrl)
+    
     await page.goto(searchUrl, { waitUntil: 'networkidle', timeout: 30000 })
     await page.waitForTimeout(3000)
 
-    // 截图调试
-    await page.screenshot({ path: '/tmp/ali-auction-debug.png' })
-    console.log('📸 截图已保存到 /tmp/ali-auction-debug.png')
+    // 截图看效果
+    await page.screenshot({ path: '/tmp/ali-v3-debug.png' })
+    console.log('截图已保存: /tmp/ali-v3-debug.png')
 
-    // 打印页面标题
     const title = await page.title()
-    console.log(`📄 页面标题: ${title}`)
+    console.log('页面标题:', title)
 
-    // 尝试多种选择器
-    const selectors = [
-      '.item-info',
-      '.product-item',
-      '[class*="item"]',
-      'li[data-id]',
-      '.list-item',
-      'a[href*="item.htm"]'
-    ]
-
-    for (const sel of selectors) {
-      const els = await page.$$(sel)
-      console.log(`  选择器 "${sel}": 找到 ${els.length} 个`)
-    }
-
-    // 获取页面 HTML 片段
-    const html = await page.content()
     const bodyText = await page.evaluate(() => document.body.innerText)
-    console.log(`\n📝 页面文本（前500字）:\n${bodyText.slice(0, 500)}\n`)
+    console.log('页面文本（前600字）:\n', bodyText.slice(0, 600))
 
-    // 查找所有链接
-    const links = await page.$$eval('a[href*="item.htm"]', els => 
-      els.slice(0, 10).map(e => ({ href: e.href, text: e.innerText.slice(0, 50) }))
-    )
-    console.log('🔗 前10个 item.htm 链接:')
-    links.forEach(l => console.log(`   ${l.text} -> ${l.href}`))
-
-    // 尝试抓取列表页的每一项
-    // 淘宝拍卖的列表结构通常是 <ul><li>...</li></ul> 或纯 a 标签
+    // 查找房源链接
     const rawLinks = await page.$$eval('a[href*="sf.taobao.com/item.htm?id="]', els =>
       els.map(e => ({ href: e.href, text: e.innerText.trim().slice(0, 80) }))
     )
-    console.log(`\n🎯 找到 ${rawLinks.length} 个房源详情页链接`)
+    console.log('找到', rawLinks.length, '个房源详情页链接')
 
-    for (const link of rawLinks.slice(0, 20)) {
-      // 过滤深圳
+    for (const link of rawLinks.slice(0, 30)) {
       const text = link.text
-      if (!text) continue
+      if (!text || text.length < 5) continue
+
+      // 过滤深圳区域
       const isShenzhen = DISTRICTS.some(d => text.includes(d))
-        || text.includes('深圳') || text.includes('广东') || text.includes('广州')
+        || text.includes('深圳')
 
       if (!isShenzhen) continue
 
       const house = {
-        title: text || link.href.split('id=')[1],
+        title: text,
         city: '深圳',
         district: parseDistrict(text),
         address: text,
@@ -143,24 +137,22 @@ async function main() {
 
       if (house.title && house.title.length > 5) {
         results.push(house)
-        console.log(`  ✓ ${house.district}: ${house.title.slice(0, 40)}`)
+        console.log('  ✓', house.district, ':', house.title.slice(0, 40))
       }
     }
 
   } catch (err) {
-    console.error('❌ 爬取出错:', err.message)
+    console.error('爬取出错:', err.message)
   }
 
   await browser.close()
 
-  // 保存结果
   if (results.length === 0) {
-    console.log('⚠️ 未找到任何房源（可能是页面结构变化，请查看截图）')
-    await saveDebugInfo(html || '')
+    console.log('⚠️ 未找到房源，请查看 /tmp/ali-v3-debug.png 截图')
     return
   }
 
-  console.log(`\n📊 共解析出 ${results.length} 条房源`)
+  console.log('共解析出', results.length, '条房源')
 
   await connectDB()
   let saved = 0
@@ -168,26 +160,19 @@ async function main() {
     try {
       const exists = await House.findOne({ platformUrl: h.platformUrl })
       if (exists) {
-        console.log(`  ⊙ 已存在: ${h.title.slice(0, 30)}`)
+        console.log('  ⊙ 已存在:', h.title.slice(0, 30))
         continue
       }
       await House.create(h)
       saved++
-      console.log(`  ✅ 新增: ${h.title.slice(0, 40)}`)
+      console.log('  ✅ 新增:', h.title.slice(0, 40))
     } catch (e) {
-      console.error(`  ✗ 失败: ${e.message}`)
+      console.error('  ✗ 失败:', e.message)
     }
   }
 
-  console.log(`\n🎉 完成！新增 ${saved} 条，跳过 ${results.length - saved} 条`)
+  console.log('🎉 完成！新增', saved, '条，跳过', results.length - saved, '条')
   await mongoose.disconnect()
-}
-
-async function saveDebugInfo(html) {
-  try {
-    await require('fs').promises.writeFile('/tmp/ali-page.html', html.slice(0, 50000))
-    console.log('📄 页面 HTML 已保存到 /tmp/ali-page.html')
-  } catch (e) {}
 }
 
 if (require.main === module) {

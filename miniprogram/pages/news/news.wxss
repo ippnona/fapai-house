@@ -1,0 +1,50 @@
+page { background: #f5f5f7; }
+.page-news { padding-bottom: 80px; }
+
+.news-tabs { display: flex; background: white; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 10; }
+.news-tab { flex: 1; text-align: center; padding: 14px 0; font-size: 15px; color: #888; font-weight: 500; border-bottom: 2px solid transparent; }
+.news-tab.active { color: #e94560; border-bottom-color: #e94560; font-weight: 700; }
+
+.news-list { padding: 12px; }
+
+/* 服务介绍 */
+.service-list { display: flex; flex-direction: column; gap: 10px; }
+.service-card { background: white; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; }
+.service-card-icon { font-size: 32px; flex-shrink: 0; }
+.service-card-title { font-size: 15px; font-weight: 600; color: #333; flex: 1; }
+.service-card-desc { font-size: 12px; color: #888; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.service-card-arrow { font-size: 20px; color: #ccc; }
+
+/* 学员报喜 */
+.success-list { display: flex; flex-direction: column; gap: 12px; }
+.success-item { background: white; border-radius: 12px; overflow: hidden; }
+.success-img { width: 100%; height: 160px; display: block; }
+.success-img-placeholder { width: 100%; height: 160px; background: linear-gradient(135deg, #f8f9fb, #e8eaf6); display: flex; align-items: center; justify-content: center; font-size: 48px; }
+.success-item-info { padding: 14px; }
+.success-item-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 4px; }
+.success-item-sub { font-size: 13px; color: #888; margin-bottom: 6px; }
+.success-item-content { font-size: 13px; color: #555; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 8px; }
+.success-item-tags { display: flex; gap: 6px; }
+
+/* 详情页 */
+.detail-cover { width: 100%; display: block; }
+.detail-video { width: 100%; }
+.detail-body { padding: 16px; }
+.detail-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+.detail-meta { font-size: 14px; color: #888; margin-bottom: 8px; }
+.detail-time { font-size: 12px; color: #bbb; margin-bottom: 16px; }
+.detail-section-title { font-size: 15px; font-weight: 600; color: #333; margin: 16px 0 10px; }
+.detail-text { font-size: 14px; color: #444; line-height: 1.8; white-space: pre-wrap; }
+.detail-images { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.detail-img { width: 100%; height: 160px; border-radius: 8px; }
+
+.consult-cta { margin-top: 24px; background: linear-gradient(135deg, #1a1a2e, #2d3a6e); border-radius: 12px; padding: 16px; text-align: center; display: flex; align-items: center; justify-content: space-between; }
+.consult-cta-text { font-size: 14px; color: white; }
+.consult-cta-btn { background: white; color: #1a1a2e; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+
+/* 底部咨询栏 */
+.bottom-consult-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: linear-gradient(135deg, #e94560, #c0392b); color: white; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; z-index: 100; box-shadow: 0 -2px 12px rgba(233,69,96,0.3); }
+
+.empty-state { text-align: center; padding: 60px 0; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; color: #888; }

@@ -318,3 +318,89 @@
   color: var(--color-text-secondary);
   font-size: 26rpx;
 }
+
+/* ── 法院公告 ── */
+.court-card .court-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24rpx;
+  margin-top: 20rpx;
+}
+.court-card .court-item {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.court-card .court-item.full {
+  grid-column: 1 / -1;
+}
+.court-card .court-label {
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 6rpx;
+}
+.court-card .court-value {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+.court-card .court-value.warn-text { color: #e67e22; }
+.court-card .court-value.sub {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+  font-weight: 400;
+}
+.tax-badge {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: #fff3e0;
+  color: #e67e22;
+  border-radius: 6rpx;
+  font-size: 24rpx;
+}
+.court-disclaimer {
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  color: #bbb;
+  text-align: right;
+}
+
+/* ── 优缺点 ── */
+.pros-cons-card .pros-summary {
+  background: #f8f9fb;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 20rpx;
+}
+.pros-cons-body { display: flex; flex-direction: column; gap: 20rpx; }
+.pros-cons-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  margin-bottom: 10rpx;
+}
+.pros-cons-title.green { color: #27ae60; }
+.pros-cons-title.red { color: #e74c3c; }
+.pros-item, .cons-item {
+  font-size: 24rpx;
+  color: #555;
+  line-height: 1.7;
+  display: flex;
+  align-items: flex-start;
+}
+.pros-dot, .cons-dot {
+  flex-shrink: 0;
+  margin-right: 8rpx;
+  font-size: 28rpx;
+}
+
+/* ── 详情页底部计算器按钮 ── */
+.bottom-btn.calc {
+  background: #f39c12;
+  color: white;
+}
+.bottom-btn.calc-active {
+  background: linear-gradient(135deg, #e94560, #c0392b);
+}

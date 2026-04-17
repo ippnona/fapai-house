@@ -5,9 +5,12 @@
       <text class="search-icon">🔍</text>
       <text class="search-placeholder">{{keyword || '搜索区域、小区名...'}}</text>
     </view>
+    <view class="calc-btn-home" bindtap="goCalculator" wx:if="{{userInfo && userInfo.role === 'admin'}}">
+      <text>🧮</text>
+    </view>
   </view>
 
-  <!-- Banner 统计 -->
+  <!-- Banner统计 -->
   <view class="banner-stats">
     <view class="banner-item" bindtap="filterByBanner" data-type="today">
       <text class="banner-num">{{stats.todayNew || 0}}</text>
@@ -23,37 +26,72 @@
     </view>
   </view>
 
-  <!-- 筛选栏 -->
-  <view class="filter-bar">
-    <view class="filter-item {{filterSort ? 'active' : ''}}" bindtap="showSortFilter">
-      {{filterSortLabel || '排序'}}
-      <text class="filter-arrow">▾</text>
-    </view>
-    <view class="filter-item {{filterDistrict ? 'active' : ''}}" bindtap="showDistrictFilter">
-      {{filterDistrict || '区域'}}
-      <text class="filter-arrow">▾</text>
-    </view>
-    <view class="filter-item {{filterPropertyType ? 'active' : ''}}" bindtap="showPropertyTypeFilter">
-      {{filterPropertyType || '物业'}}
-      <text class="filter-arrow">▾</text>
-    </view>
-    <view class="filter-item {{filterPrice ? 'active' : ''}}" bindtap="showPriceFilter">
-      {{filterPrice || '价格'}}
-      <text class="filter-arrow">▾</text>
+  <!-- 🧮 成本计算器入口 -->
+  <view class="section" wx:if="{{showCalculatorBanner}}">
+    <view class="calc-banner" bindtap="goCalculator">
+      <view class="calc-banner-left">
+        <view class="calc-banner-title">🧮 购房成本计算器</view>
+        <view class="calc-banner-desc">一键算清购房总支出，辅拍费/税费/平台费全包含</view>
+      </view>
+      <view class="calc-banner-arrow">›</view>
     </view>
   </view>
 
-  <!-- 筛选下拉面板 -->
+  <!-- 🏆 学员报喜轮播 -->
+  <view class="section" wx:if="{{successList.length > 0}}">
+    <view class="section-header">
+      <view class="section-title">🏆 学员报喜</view>
+      <view class="section-more" bindtap="goSuccessList">更多 ›</view>
+    </view>
+    <scroll-view class="success-scroll" scroll-x="{{true}}">
+      <view class="success-card" wx:for="{{successList}}" wx:key="_id" bindtap="goSuccessDetail" data-id="{{item._id}}">
+        <image class="success-img" src="{{item.images[0] || '/assets/default-house.png'}}" mode="aspectFill" wx:if="{{item.images.length > 0}}"/>
+        <view class="success-img-placeholder" wx:else>🏆</view>
+        <view class="success-tag" wx:if="{{item.videoUrl}}">视频</view>
+        <view class="success-info">
+          <view class="success-title">{{item.title}}</view>
+          <view class="success-subtitle">{{item.subtitle}}</view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 🏢 服务介绍 -->
+  <view class="section" wx:if="{{serviceList.length > 0}}">
+    <view class="section-header">
+      <view class="section-title">🏢 我们能帮您</view>
+      <view class="section-more" bindtap="goServiceList">了解全部 ›</view>
+    </view>
+    <view class="service-grid">
+      <view class="service-item" wx:for="{{serviceList}}" wx:key="_id" bindtap="goServiceDetail" data-id="{{item._id}}">
+        <view class="service-icon">{{item.serviceIcon || '🔧'}}</view>
+        <view class="service-name">{{item.title}}</view>
+        <view class="service-desc">{{item.serviceDesc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view class="filter-item {{filterSort ? 'active' : ''}}" bindtap="showSortFilter">
+      {{filterSortLabel || '排序'}}<text class="filter-arrow">▾</text>
+    </view>
+    <view class="filter-item {{filterDistrict ? 'active' : ''}}" bindtap="showDistrictFilter">
+      {{filterDistrict || '区域'}}<text class="filter-arrow">▾</text>
+    </view>
+    <view class="filter-item {{filterPropertyType ? 'active' : ''}}" bindtap="showPropertyTypeFilter">
+      {{filterPropertyType || '物业'}}<text class="filter-arrow">▾</text>
+    </view>
+    <view class="filter-item {{filterPrice ? 'active' : ''}}" bindtap="showPriceFilter">
+      {{filterPrice || '价格'}}<text class="filter-arrow">▾</text>
+    </view>
+  </view>
+
+  <!-- 筛选面板 -->
   <view class="filter-panel" wx:if="{{showFilterPanel}}">
     <view class="filter-panel-mask" bindtap="closeFilter"></view>
     <view class="filter-panel-content">
-      <view class="filter-option" 
-            wx:for="{{filterOptions}}" 
-            wx:key="value"
-            bindtap="selectFilter"
-            data-type="{{filterType}}"
-            data-value="{{item.value}}"
-            data-label="{{item.label}}">
+      <view class="filter-option" wx:for="{{filterOptions}}" wx:key="value" bindtap="selectFilter" data-type="{{filterType}}" data-value="{{item.value}}" data-label="{{item.label}}">
         <text class="{{currentFilterValue === item.value ? 'selected' : ''}}">{{item.label}}</text>
       </view>
     </view>
@@ -62,59 +100,44 @@
   <!-- 房源列表 -->
   <view class="house-list">
     <view class="house-card" wx:for="{{houses}}" wx:key="_id" bindtap="goDetail" data-id="{{item._id}}">
-      <!-- 图片 -->
       <view class="house-img-wrap">
         <image class="house-img" src="{{item.images[0] || '/assets/default-house.png'}}" mode="aspectFill"/>
-        <view class="house-status-tag tag tag-{{item.status}}">
-          {{statusMap[item.status]}}
-        </view>
-        <view class="house-platform {{item.platform}}">
-          {{item.platform === 'ali' ? '阿里' : '京东'}}
-        </view>
-        <view class="house-watchers" wx:if="{{item.watchCount}}">
-          👁 {{item.watchCount}}
-        </view>
+        <view class="house-status-tag tag tag-{{item.status}}">{{statusMap[item.status]}}</view>
+        <view class="house-platform {{item.platform}}">{{item.platform === 'ali' ? '阿里' : '京东'}}</view>
+        <view class="house-watchers" wx:if="{{item.watchCount}}">👁 {{item.watchCount}}</view>
       </view>
-      
-      <!-- 信息 -->
       <view class="house-info">
         <view class="house-title">{{item.title}}</view>
-        <view class="house-location">
-          <text class="location-icon">📍</text>
-          {{item.district}} · {{item.address}}
-        </view>
+        <view class="house-location"><text>📍</text> {{item.district}} · {{item.address}}</view>
         <view class="house-meta">
           <text>{{item.roomLayout}}</text>
-          <text class="meta-dot">·</text>
-          <text>{{item.area}}m²</text>
+          <text class="meta-dot" wx:if="{{item.area}}">·</text>
+          <text wx:if="{{item.area}}">{{item.area}}m²</text>
           <text class="meta-dot" wx:if="{{item.propertyType}}">·</text>
           <text wx:if="{{item.propertyType}}">{{item.propertyType}}</text>
         </view>
         <view class="house-price-row">
           <view class="auction-price">
             <text class="price-label">起拍</text>
-            <text class="price">{{item.auctionStartPrice}}</text>
-            <text class="price-unit">万</text>
+            <text class="price">{{item.displayStartPrice}}</text>
           </view>
           <view class="market-price">
             <text class="price-label">市场</text>
-            <text class="market-value">{{item.marketPrice}}万</text>
+            <text class="market-value">{{item.displayMarketPrice}}</text>
           </view>
           <view class="discount" wx:if="{{item.marketPrice > item.auctionStartPrice}}">
-            <text class="discount-badge">{{item.discount}}折</text>
+            <text class="discount-badge">{{item.displayDiscount}}折</text>
           </view>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 加载状态 -->
   <view class="loading-area">
     <view wx:if="{{loading}}" class="loading-spinner">加载中...</view>
     <view wx:if="{{noMore && houses.length > 0}}" class="no-more">— 已加载全部 —</view>
   </view>
 
-  <!-- 空状态 -->
   <view class="empty-state" wx:if="{{!loading && houses.length === 0}}">
     <view class="empty-icon">🏠</view>
     <view>暂无符合条件的房源</view>

@@ -1,0 +1,86 @@
+<view class="page-news">
+  <!-- 顶部标签 -->
+  <view class="news-tabs" wx:if="{{!isDetail}}">
+    <view class="news-tab {{newsType === 'success' ? 'active' : ''}}" bindtap="switchType" data-type="success">🏆 学员报喜</view>
+    <view class="news-tab {{newsType === 'service' ? 'active' : ''}}" bindtap="switchType" data-type="service">🏢 服务介绍</view>
+  </view>
+
+  <!-- 详情页 -->
+  <view wx:if="{{isDetail && detail}}">
+    <image class="detail-cover" src="{{detail.images[0]}}" mode="widthFix" wx:if="{{detail.images.length > 0}}"/>
+    <video class="detail-video" src="{{detail.videoUrl}}" poster="{{detail.videoCover}}" wx:if="{{detail.videoUrl}}" controls/>
+
+    <view class="detail-body">
+      <view class="detail-title">{{detail.title}}</view>
+      <view class="detail-meta" wx:if="{{detail.subtitle || detail.serviceDesc}}">
+        {{detail.subtitle || detail.serviceDesc}}
+      </view>
+      <view class="detail-time">{{detail.createdAt}}</view>
+
+      <!-- 服务详情 -->
+      <view class="service-detail-content" wx:if="{{newsType === 'service' && detail.serviceDetail}}">
+        <view class="detail-section-title" wx:if="{{detail.serviceDetail}}">服务详情</view>
+        <view class="detail-text">{{detail.serviceDetail}}</view>
+      </view>
+
+      <!-- 报喜正文 -->
+      <view class="success-content" wx:if="{{newsType === 'success' && detail.content}}">
+        <view class="detail-text">{{detail.content}}</view>
+      </view>
+
+      <!-- 报喜图集 -->
+      <view class="detail-images" wx:if="{{detail.images.length > 1}}">
+        <image wx:for="{{detail.images}}" wx:key="*this" src="{{item}}" mode="aspectFill" class="detail-img" bindtap="previewImg" data-url="{{item}}"/>
+      </view>
+
+      <!-- 服务详情页咨询入口 -->
+      <view class="consult-cta" wx:if="{{newsType === 'service' && detail.consultEnabled !== false}}" bindtap="showConsult">
+        <view class="consult-cta-text">有疑问？立即咨询专业顾问</view>
+        <view class="consult-cta-btn">💬 联系我们</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 列表页 -->
+  <view wx:if="{{!isDetail}}">
+    <view class="news-list">
+      <!-- 服务介绍网格 -->
+      <view class="service-list" wx:if="{{newsType === 'service'}}">
+        <view class="service-card" wx:for="{{list}}" wx:key="_id" bindtap="goDetail" data-id="{{item._id}}">
+          <view class="service-card-icon">{{item.serviceIcon || '🔧'}}</view>
+          <view class="service-card-title">{{item.title}}</view>
+          <view class="service-card-desc">{{item.serviceDesc}}</view>
+          <view class="service-card-arrow">›</view>
+        </view>
+      </view>
+
+      <!-- 学员报喜列表 -->
+      <view class="success-list" wx:if="{{newsType === 'success'}}">
+        <view class="success-item" wx:for="{{list}}" wx:key="_id" bindtap="goDetail" data-id="{{item._id}}">
+          <image class="success-img" src="{{item.images[0] || '/assets/default-house.png'}}" mode="aspectFill" wx:if="{{item.images.length > 0}}"/>
+          <view class="success-img-placeholder" wx:else>🏆</view>
+          <view class="success-item-info">
+            <view class="success-item-title">{{item.title}}</view>
+            <view class="success-item-sub">{{item.subtitle}}</view>
+            <view class="success-item-content" wx:if="{{item.content}}">{{item.content}}</view>
+            <view class="success-item-tags">
+              <text class="tag tag-success" wx:if="{{item.videoUrl}}">视频</text>
+              <text class="tag tag-active" wx:if="{{item.images.length > 1}}">{{item.images.length}}张图</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{!loading && list.length === 0}}">
+        <view class="empty-icon">📭</view>
+        <view class="empty-text">暂无内容</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部咨询栏（列表页） -->
+  <view class="bottom-consult-bar" bindtap="showConsult">
+    💬 咨询我们
+  </view>
+</view>

@@ -123,4 +123,16 @@ App({
     wx.removeStorageSync('token')
     wx.removeStorageSync('userInfo')
   }
+,  // 全局价格格式化（元→万）
+  formatPrice(yuan) {
+    if (!yuan) return '—'
+    const v = parseFloat(yuan)
+    if (v >= 100000000) return (v / 100000000).toFixed(1) + '亿'
+    return (v / 10000).toFixed(0) + '万'
+  },
+  formatPriceNum(yuan) {
+    if (!yuan) return 0
+    const v = parseFloat(yuan)
+    return v >= 100000000 ? (v / 100000000).toFixed(1) : (v / 10000).toFixed(0)
+  }
 })

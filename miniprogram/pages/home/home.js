@@ -3,20 +3,14 @@ const app = getApp()
 Page({
   data: {
     houses: [],
-    keyword: '',
-    page: 1,
-    pageSize: 10,
-    loading: false,
-    noMore: false,
-    
-    // Banner统计数据
-    stats: {
-      todayNew: 0,
-      ongoing: 0,
-      upcoming: 0
-    },
-    
-    // 筛选
+    stats: { todayNew: 0, ongoing: 0, upcoming: 0 },
+    // 新增区域
+    successList: [],      // 学员报喜
+    serviceList: [],       // 服务介绍
+    showCalculatorBanner: false,  // 计算器入口（管理员或员工可见）
+    // 原有筛选
+    houses: [],
+    stats: {},
     filterDistrict: '',
     filterSort: '',
     filterSortLabel: '',
@@ -26,8 +20,10 @@ Page({
     filterType: '',
     filterOptions: [],
     currentFilterValue: '',
-    
-    // 状态映射
+    keyword: '',
+    loading: false,
+    page: 1,
+    noMore: false,
     statusMap: {
       pending: '待拍卖',
       ongoing: '拍卖中',
@@ -35,217 +31,180 @@ Page({
       sold: '已成交',
       withdrawn: '已撤回'
     },
-    
-    // 筛选选项
-    sortOptions: [
-      { label: '默认排序', value: 'default' },
-      { label: '最新发布', value: 'latest' },
-      { label: '拍卖时间', value: 'auctionTime' },
-      { label: '价格从低到高', value: 'priceAsc' },
-      { label: '价格从高到低', value: 'priceDesc' }
-    ],
-    districtOptions: [
-      { label: '全部区域', value: '' },
-      { label: '南山', value: '南山' },
-      { label: '福田', value: '福田' },
-      { label: '罗湖', value: '罗湖' },
-      { label: '宝安', value: '宝安' },
-      { label: '龙岗', value: '龙岗' },
-      { label: '龙华', value: '龙华' },
-      { label: '光明', value: '光明' },
-      { label: '坪山', value: '坪山' },
-      { label: '盐田', value: '盐田' },
-      { label: '大鹏', value: '大鹏' }
-    ],
-    propertyTypeOptions: [
-      { label: '全部物业', value: '' },
-      { label: '住宅', value: '住宅' },
-      { label: '商业', value: '商业' }
-    ],
-    priceOptions: [
-      { label: '不限价格', value: '' },
-      { label: '200万以下', value: '0-200' },
-      { label: '200-500万', value: '200-500' },
-      { label: '500-1000万', value: '500-1000' },
-      { label: '1000-2000万', value: '1000-2000' },
-      { label: '2000万以上', value: '2000-999999' }
-    ]
+    userInfo: null
   },
 
   onLoad() {
-    this.loadBannerStats()
+    const userInfo = wx.getStorageSync('userInfo')
+    this.setData({ userInfo })
+    this.loadStats()
     this.loadHouses()
+    this.loadHomeData()
   },
 
-  onPullDownRefresh() {
-    this.setData({ page: 1, houses: [], noMore: false })
-    this.loadBannerStats()
-    this.loadHouses(() => {
-      wx.stopPullDownRefresh()
-    })
+  onShow() {
+    const userInfo = wx.getStorageSync('userInfo')
+    this.setData({ userInfo })
+    // 管理员显示计算器banner
+    this.setData({ showCalculatorBanner: userInfo && (userInfo.role === 'admin') })
   },
 
-  onReachBottom() {
-    if (!this.data.noMore && !this.data.loading) {
-      this.loadHouses()
-    }
-  },
-
-  // 加载Banner统计数据
-  loadBannerStats() {
-    app.request({ url: '/houses/stats' }).then(res => {
-      this.setData({ stats: res.data || {} })
+  // 加载首页内容数据
+  loadHomeData() {
+    app.request({ url: '/news/success/home' }).then(res => {
+      if (res.code === 0) this.setData({ successList: res.data || [] })
+    }).catch(() => {})
+    app.request({ url: '/news/services/home' }).then(res => {
+      if (res.code === 0) this.setData({ serviceList: res.data || [] })
     }).catch(() => {})
   },
 
-  // Banner点击筛选
-  filterByBanner(e) {
-    const type = e.currentTarget.dataset.type
-    let status = ''
-    if (type === 'ongoing') status = 'ongoing'
-    if (type === 'upcoming') status = 'pending'
-    // todayNew 需要后端按日期筛选，暂时用status
-    this.setData({ 
-      filterStatus: status,
-      page: 1,
-      houses: [],
-      noMore: false
-    })
-    this.loadHouses()
+  // 加载统计数据
+  loadStats() {
+    app.request({ url: '/houses/stats' }).then(res => {
+      if (res.code === 0) this.setData({ stats: res.data || {} })
+    }).catch(() => {})
   },
 
   // 加载房源列表
-  loadHouses(callback) {
+  loadHouses(reset = true) {
     if (this.data.loading) return
+    if (reset) {
+      this.setData({ page: 1, houses: [], noMore: false })
+    }
     this.setData({ loading: true })
-
-    const data = {
-      page: this.data.page,
-      pageSize: this.data.pageSize
-    }
     
-    // 筛选参数
-    if (this.data.filterDistrict) data.district = this.data.filterDistrict
-    if (this.data.filterStatus) data.status = this.data.filterStatus
-    if (this.data.filterPropertyType) data.propertyType = this.data.filterPropertyType
-    if (this.data.filterPrice) {
-      const [min, max] = this.data.filterPrice.split('-')
-      data.minPrice = min * 10000
-      data.maxPrice = max * 10000
-    }
-    if (this.data.keyword) data.keyword = this.data.keyword
-    
-    // 排序
-    if (this.data.filterSort === 'latest') data.sortBy = 'createdAt'
-    if (this.data.filterSort === 'auctionTime') data.sortBy = 'auctionStartTime'
-    if (this.data.filterSort === 'priceAsc') { data.sortBy = 'auctionStartPrice'; data.sortOrder = 'asc' }
-    if (this.data.filterSort === 'priceDesc') { data.sortBy = 'auctionStartPrice'; data.sortOrder = 'desc' }
-    // default = 按阿里提醒人数排序，由后端实现
+    const params = { page: this.data.page, pageSize: 10 }
+    if (this.data.filterDistrict) params.district = this.data.filterDistrict
+    if (this.data.filterSort === 'price_asc') { params.sortBy = 'auctionStartPrice'; params.sortOrder = 'asc' }
+    if (this.data.filterSort === 'price_desc') { params.sortBy = 'auctionStartPrice'; params.sortOrder = 'desc' }
+    if (this.data.filterSort === 'time') { params.sortBy = 'auctionStartTime' }
+    if (this.data.filterPropertyType) params.propertyType = this.data.filterPropertyType
+    if (this.data.keyword) params.keyword = this.data.keyword
 
-    app.request({
-      url: '/houses',
-      data
-    }).then(res => {
-      const newList = res.data.list.map(h => ({
-        ...h,
-        // 价格转换为"万"
-        auctionStartPrice: (h.auctionStartPrice / 10000).toFixed(0),
-        marketPrice: (h.marketPrice / 10000).toFixed(0),
-        // 折扣
-        discount: h.marketPrice && h.auctionStartPrice 
-          ? (h.auctionStartPrice / h.marketPrice * 10).toFixed(1) : ''
-      }))
-      
-      this.setData({
-        houses: this.data.page === 1 ? newList : [...this.data.houses, ...newList],
-        page: this.data.page + 1,
-        noMore: newList.length < this.data.pageSize,
-        loading: false
-      })
-      callback && callback()
+    app.request({ url: '/houses', data: params }).then(res => {
+      if (res.code === 0) {
+        const p = v => v ? (parseFloat(v) >= 100000000
+          ? (parseFloat(v)/100000000).toFixed(1) + '亿'
+          : (parseFloat(v)/10000).toFixed(0)) : '—'
+        const list = (reset ? res.data.list : [...this.data.houses, ...res.data.list]).map(h => ({
+          ...h,
+          displayStartPrice: p(h.auctionStartPrice),
+          displayMarketPrice: p(h.marketPrice),
+          displayDiscount: (h.marketPrice && h.auctionStartPrice)
+            ? (h.auctionStartPrice / h.marketPrice * 10).toFixed(1) : '10.0'
+        }))
+        this.setData({
+          houses: list,
+          loading: false,
+          noMore: res.data.list.length < 10
+        })
+      } else {
+        this.setData({ loading: false })
+      }
     }).catch(() => {
       this.setData({ loading: false })
-      callback && callback()
     })
+  },
+
+  // 下拉刷新
+  onPullDownRefresh() {
+    this.loadStats()
+    this.loadHomeData()
+    this.loadHouses(true)
+    setTimeout(() => wx.stopPullDownRefresh(), 800)
+  },
+
+  // 上拉加载
+  onReachBottom() {
+    if (!this.data.noMore && !this.data.loading) {
+      this.setData({ page: this.data.page + 1 })
+      this.loadHouses(false)
+    }
   },
 
   // 跳转详情
   goDetail(e) {
-    const id = e.currentTarget.dataset.id
-    if (app.checkMember()) {
-      wx.navigateTo({ url: `/pages/detail/detail?id=${id}` })
-    } else {
-      wx.showModal({
-        title: '需要会员权限',
-        content: '查看房源详情需开通会员，请联系管理员',
-        confirmText: '去登录',
-        success: (res) => {
-          if (res.confirm) {
-            wx.navigateTo({ url: '/pages/login/login' })
-          }
-        }
-      })
-    }
+    wx.navigateTo({ url: '/pages/detail/detail?id=' + e.currentTarget.dataset.id })
   },
 
   // 搜索
   onSearchTap() {
-    wx.showModal({
-      title: '搜索房源',
-      editable: true,
-      placeholderText: '输入区域或小区名',
-      success: (res) => {
-        if (res.content) {
-          this.setData({ 
-            keyword: res.content, 
-            page: 1, 
-            houses: [], 
-            noMore: false 
-          })
-          this.loadHouses()
-        }
-      }
-    })
+    wx.navigateTo({ url: '/pages/search/search' })
+  },
+
+  // Banner筛选
+  filterByBanner(e) {
+    const type = e.currentTarget.dataset.type
+    if (type === 'today') this.setData({ filterSort: 'createdAt' })
+    else if (type === 'ongoing') this.setData({ filterDistrict: 'ongoing' })
+    this.loadHouses(true)
   },
 
   // 筛选面板
-  showSortFilter() { this.showFilter('sort', this.data.sortOptions) },
-  showDistrictFilter() { this.showFilter('district', this.data.districtOptions) },
-  showPropertyTypeFilter() { this.showFilter('propertyType', this.data.propertyTypeOptions) },
-  showPriceFilter() { this.showFilter('price', this.data.priceOptions) },
+  showSortFilter() { this.showFilterPanel('sort', this.data.sortOptions) },
+  showDistrictFilter() { this.showFilterPanel('district', this.data.districtOptions) },
+  showPropertyTypeFilter() { this.showFilterPanel('propertyType', this.data.propertyTypeOptions) },
+  showPriceFilter() { this.showFilterPanel('price', this.data.priceOptions) },
 
-  showFilter(type, options) {
-    let currentValue = ''
-    if (type === 'sort') currentValue = this.data.filterSort
-    if (type === 'district') currentValue = this.data.filterDistrict
-    if (type === 'propertyType') currentValue = this.data.filterPropertyType
-    if (type === 'price') currentValue = this.data.filterPrice
-
+  showFilterPanel(type, options) {
+    const opts = options || this.getFilterOptions(type)
     this.setData({
       showFilterPanel: true,
       filterType: type,
-      filterOptions: options,
-      currentFilterValue: currentValue
+      filterOptions: opts,
+      currentFilterValue: this.data['filter' + type.charAt(0).toUpperCase() + type.slice(1)]
     })
+  },
+
+  getFilterOptions(type) {
+    if (type === 'sort') return [
+      { label: '默认排序', value: '' },
+      { label: '价格从低到高', value: 'price_asc' },
+      { label: '价格从高到低', value: 'price_desc' },
+      { label: '拍卖时间', value: 'time' }
+    ]
+    if (type === 'district') return [
+      { label: '全部', value: '' }, { label: '福田', value: '福田' }, { label: '罗湖', value: '罗湖' },
+      { label: '南山', value: '南山' }, { label: '宝安', value: '宝安' }, { label: '龙岗', value: '龙岗' },
+      { label: '龙华', value: '龙华' }, { label: '光明', value: '光明' }, { label: '盐田', value: '盐田' }
+    ]
+    if (type === 'propertyType') return [
+      { label: '全部', value: '' }, { label: '住宅', value: '住宅' }, { label: '商业', value: '商业' }
+    ]
+    if (type === 'price') return [
+      { label: '不限', value: '' },
+      { label: '200万以下', value: '0-200' },
+      { label: '200-500万', value: '200-500' },
+      { label: '500-1000万', value: '500-1000' },
+      { label: '1000万以上', value: '1000-' }
+    ]
+    return []
   },
 
   selectFilter(e) {
     const { type, value, label } = e.currentTarget.dataset
-    const updateData = { showFilterPanel: false }
-    
-    if (type === 'sort') {
-      updateData.filterSort = value
-      updateData.filterSortLabel = label
-    }
-    if (type === 'district') updateData.filterDistrict = value === '' ? '' : label
-    if (type === 'propertyType') updateData.filterPropertyType = value
-    if (type === 'price') updateData.filterPrice = value
-    
-    this.setData({ ...updateData, page: 1, houses: [], noMore: false })
-    this.loadHouses()
+    const key = 'filter' + type.charAt(0).toUpperCase() + type.slice(1)
+    this.setData({ [key]: value, showFilterPanel: false })
+    if (type === 'district') this.setData({ filterDistrict: value })
+    if (type === 'sort') this.setData({ filterSort: value, filterSortLabel: label })
+    if (type === 'propertyType') this.setData({ filterPropertyType: value })
+    if (type === 'price') this.setData({ filterPrice: value })
+    this.loadHouses(true)
   },
 
-  closeFilter() {
-    this.setData({ showFilterPanel: false })
-  }
+  closeFilter() { this.setData({ showFilterPanel: false }) },
+
+  // 去计算器
+  goCalculator() {
+    wx.navigateTo({ url: '/pages/calculator/calculator' })
+  },
+
+  // 学员报喜列表
+  goSuccessList() { wx.navigateTo({ url: '/pages/news/news?type=success' }) },
+  goSuccessDetail(e) { wx.navigateTo({ url: '/pages/news/news?id=' + e.currentTarget.dataset.id }) },
+
+  // 服务介绍
+  goServiceList() { wx.navigateTo({ url: '/pages/news/news?type=service' }) },
+  goServiceDetail(e) { wx.navigateTo({ url: '/pages/news/news?id=' + e.currentTarget.dataset.id }) }
 })
