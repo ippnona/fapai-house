@@ -1,185 +1,266 @@
 /**
- * 京东拍卖深圳法拍房爬虫
- * 使用 Playwright 模拟浏览器抓取
+ * 京东拍卖爬虫 - 深圳法拍房
  * 
- * 运行方式：node crawlers/jd-auction.js
+ * 使用方法:
+ *   node crawlers/jd-auction.js           # 默认抓取深圳法拍房
+ *   node crawlers/jd-auction.js --limit 50  # 限制条数
+ *   node crawlers/jd-auction.js --dry-run   # 只打印不写入
  */
 
-const { chromium } = require('playwright')
 const mongoose = require('mongoose')
 const House = require('../models/House')
 
-const DISTRICTS = ['南山', '福田', '罗湖', '宝安', '龙岗', '龙华', '光明', '坪山', '盐田', '大鹏']
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/fapai-house'
+const BASE_URL = 'https://paimai.jd.com'
 
-async function connectDB() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(MONGO_URI)
-    console.log('✅ MongoDB connected')
-  }
+// 京东拍卖搜索接口
+const SEARCH_URL = 'https://api.m.jd.com/client.action'
+
+async function fetchJdList(page = 1, pageSize = 20) {
+  const params = new URLSearchParams({
+    functionId: 'searchAssetList',
+    client: 'pc',
+    clientVersion: '1.0.0',
+    body: JSON.stringify({
+      category: '1625',  // 房产类目
+      province: '广东省',
+      city: '深圳市',
+      page: page,
+      pageSize: pageSize,
+      sortField: 0
+    })
+  })
+  
+  const res = await fetch(SEARCH_URL + '?' + params.toString(), {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      'Referer': 'https://paimai.jd.com/',
+      'Accept': 'application/json'
+    }
+  })
+  
+  const data = await res.json()
+  return data
+}
+
+async function fetchJdDetail(productId) {
+  const url = `https://paimai.jd.com/json/current/englishproduct/detail?productId=${productId}`
+  
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      'Referer': `https://paimai.jd.com/${productId}`
+    }
+  })
+  
+  const data = await res.json()
+  return data
 }
 
 function parsePrice(str) {
   if (!str) return null
-  const num = parseFloat(str.replace(/[^\d.]/g, ''))
-  if (isNaN(num)) return null
-  if (str.includes('万')) return num * 10000
-  return num
+  // 处理 "123.45万" 格式
+  if (str.includes('万')) {
+    return Math.round(parseFloat(str.replace('万', '')) * 10000)
+  }
+  // 处理 "1.23亿" 格式
+  if (str.includes('亿')) {
+    return Math.round(parseFloat(str.replace('亿', '')) * 100000000)
+  }
+  // 纯数字（元）
+  const num = parseFloat(str.replace(/[^0-9.]/g, ''))
+  return isNaN(num) ? null : Math.round(num)
 }
 
 function parseArea(str) {
   if (!str) return null
-  const num = parseFloat(str.replace(/[^\d.]/g, ''))
-  return isNaN(num) ? null : num
+  const match = str.match(/([\d.]+)/)
+  return match ? parseFloat(match[1]) : null
 }
 
-function parseStatus(text) {
-  if (!text) return 'pending'
-  if (text.includes('拍卖中') || text.includes('进行中')) return 'ongoing'
-  if (text.includes('已结束') || text.includes('已成交')) return 'ended'
-  return 'pending'
+function parseDistrict(title) {
+  const districts = ['福田', '南山', '罗湖', '宝安', '龙岗', '龙华', '盐田', '光明', '坪山', '大鹏']
+  for (const d of districts) {
+    if (title.includes(d)) return d
+  }
+  return '深圳'
 }
 
-function parsePropertyType(title) {
-  if (!title) return '住宅'
-  if (title.includes('写字楼') || title.includes('办公')) return '写字楼'
-  if (title.includes('公寓')) return '公寓'
+function parsePropertyType(title, tags = []) {
   if (title.includes('商铺') || title.includes('商业')) return '商铺'
+  if (title.includes('办公') || title.includes('写字楼')) return '办公'
+  if (title.includes('公寓')) return '公寓'
   if (title.includes('别墅')) return '别墅'
+  if (tags.some(t => t.includes('住宅'))) return '住宅'
   return '住宅'
 }
 
-async function crawlJDAuction() {
-  console.log('🕷️ 启动京东拍卖爬虫...')
+function parseAuctionTime(startTime, endTime) {
+  const parseDate = (str) => {
+    if (!str) return null
+    // 京东时间格式: "2024-04-20 10:00:00"
+    return new Date(str.replace(/-/g, '/'))
+  }
+  return {
+    start: parseDate(startTime),
+    end: parseDate(endTime)
+  }
+}
+
+function mapStatus(status) {
+  const map = {
+    'wait': 'pending',
+    'going': 'ongoing',
+    'end': 'ended',
+    'success': 'sold',
+    'fail': 'ended'
+  }
+  return map[status] || 'pending'
+}
+
+async function crawlJdAuction(limit = 100, dryRun = false) {
+  console.log('🕷️ 开始抓取京东拍卖 - 深圳法拍房...\n')
   
-  const browser = await chromium.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  })
+  const houses = []
+  let page = 1
+  let total = 0
   
-  const context = await browser.newContext({
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    viewport: { width: 1920, height: 1080 }
-  })
-  
-  const page = await context.newPage()
-  const results = []
-  
-  try {
-    // 京东拍卖司法拍卖频道
-    await page.goto('https://auction.jd.com/sifa.html', { waitUntil: 'domcontentloaded', timeout: 30000 })
-    await page.waitForTimeout(2000)
+  while (houses.length < limit) {
+    console.log(`📄 正在获取第 ${page} 页...`)
     
-    // 搜索深圳
-    const searchInput = await page.$('input[placeholder*="搜索"]') || await page.$('input.search-input') || await page.$('#search-input')
-    
-    if (searchInput) {
-      await searchInput.fill('深圳房产')
-      await page.keyboard.press('Enter')
-      await page.waitForTimeout(3000)
+    let data
+    try {
+      data = await fetchJdList(page, 20)
+    } catch (err) {
+      console.error('❌ 获取列表失败:', err.message)
+      break
     }
     
-    // 获取列表
-    const items = await page.$$('.item, .auction-item, [class*="goods-item"], [class*="list-item"]')
-    console.log(`📦 找到 ${items.length} 个可能的房源卡片`)
+    const list = data?.data?.list || data?.list || []
+    if (!list.length) {
+      console.log('✅ 没有更多数据')
+      break
+    }
     
-    for (const item of items.slice(0, 20)) {
+    for (const item of list) {
+      if (houses.length >= limit) break
+      
       try {
-        const titleEl = await item.$('h3, .title, [class*="title"], .name')
-        const priceEl = await item.$('[class*="price"], .price')
-        const areaEl = await item.$('[class*="area"], .area, [class*="size"]')
-        const linkEl = await item.$('a[href*="item"], a[href*="auction"]')
-        const statusEl = await item.$('[class*="status"], .tag, .state')
+        const productId = item.productId || item.id
+        const title = item.title || item.productName || '未知房源'
+        const startPrice = parsePrice(item.startPrice || item.currentPrice || item.price)
+        const marketPrice = parsePrice(item.marketPrice || item.evalPrice)
+        const deposit = parsePrice(item.bailPrice || item.deposit)
         
-        const title = await titleEl?.textContent() || ''
-        const priceText = await priceEl?.textContent() || ''
-        const areaText = await areaEl?.textContent() || ''
-        const href = await linkEl?.getAttribute('href') || ''
-        const statusText = await statusEl?.textContent() || ''
-        
-        // 过滤非深圳
-        if (!title.includes('深圳') && !title.includes('南山') && !title.includes('福田') && 
-            !title.includes('罗湖') && !title.includes('宝安') && !title.includes('龙岗')) {
-          continue
+        // 获取详情
+        let detail = null
+        try {
+          detail = await fetchJdDetail(productId)
+          await new Promise(r => setTimeout(r, 500)) // 避免请求过快
+        } catch (e) {
+          console.log('  ⚠️ 获取详情失败:', productId)
         }
         
-        const house = {
-          title: title.trim(),
+        const detailData = detail?.data || detail || {}
+        const area = parseArea(detailData.area || detailData.houseArea || item.area)
+        const time = parseAuctionTime(
+          detailData.startTime || item.startTime,
+          detailData.endTime || item.endTime
+        )
+        
+        const houseData = {
+          title: title.substring(0, 100),
           city: '深圳',
-          district: DISTRICTS.find(d => title.includes(d)) || '深圳',
-          address: title.trim(),
-          area: parseArea(areaText) || 100,
-          auctionStartPrice: parsePrice(priceText) || 3000000,
-          marketPrice: (parsePrice(priceText) || 3000000) * 1.3,
-          deposit: (parsePrice(priceText) || 3000000) * 0.1,
-          propertyType: parsePropertyType(title),
-          status: parseStatus(statusText),
+          district: parseDistrict(title),
+          address: detailData.address || item.address || '',
+          propertyType: parsePropertyType(title, item.tags || []),
+          area: area,
+          roomLayout: detailData.roomLayout || '',
+          marketPrice: marketPrice,
+          auctionStartPrice: startPrice,
+          deposit: deposit,
+          currentPrice: parsePrice(item.currentPrice),
           platform: 'jd',
-          platformUrl: href.startsWith('http') ? href : `https://auction.jd.com${href}`,
-          auctionStartTime: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000),
-          auctionEndTime: new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000),
-          source: 'jd',
-          watchCount: Math.floor(Math.random() * 150) + 5
+          platformUrl: `https://paimai.jd.com/${productId}`,
+          auctionStartTime: time.start || new Date(),
+          auctionEndTime: time.end || new Date(Date.now() + 7 * 86400000),
+          status: mapStatus(item.status || detailData.status),
+          riskLevel: '中',
+          images: detailData.images || item.images || [],
+          source: 'jd'
         }
         
-        if (house.title && house.auctionStartPrice) {
-          results.push(house)
-          console.log(`  ✓ ${house.title.slice(0, 30)}... - ${house.district} - ${(house.auctionStartPrice/10000).toFixed(0)}万`)
+        // 只保留有效数据
+        if (houseData.auctionStartPrice && houseData.auctionStartTime) {
+          houses.push(houseData)
+          console.log(`  ✅ [${houses.length}] ${houseData.district} | ${formatPrice(houseData.auctionStartPrice)} | ${title.substring(0, 30)}...`)
         }
-      } catch (e) {
-        // 跳过
+      } catch (err) {
+        console.log('  ⚠️ 解析失败:', err.message)
       }
     }
     
-  } catch (err) {
-    console.error('❌ 爬取过程出错:', err.message)
+    page++
+    await new Promise(r => setTimeout(r, 1000)) // 页间延迟
   }
   
-  await browser.close()
-  return results
-}
-
-async function saveHouses(houses) {
-  if (houses.length === 0) {
-    console.log('⚠️ 没有新数据需要保存')
-    return
+  console.log(`\n📊 共获取 ${houses.length} 条房源数据`)
+  
+  if (dryRun) {
+    console.log('\n🔍 [DRY-RUN] 数据预览:')
+    houses.slice(0, 3).forEach((h, i) => {
+      console.log(`\n[${i+1}] ${h.title}`)
+      console.log(`   区域: ${h.district} | 类型: ${h.propertyType}`)
+      console.log(`   起拍: ${formatPrice(h.auctionStartPrice)} | 保证金: ${formatPrice(h.deposit)}`)
+      console.log(`   链接: ${h.platformUrl}`)
+    })
+    return houses
   }
   
-  await connectDB()
+  // 写入数据库
+  console.log('\n💾 写入数据库...')
   
-  let saved = 0
+  const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/fapai-house'
+  await mongoose.connect(MONGO_URI)
+  console.log('✅ MongoDB 已连接')
+  
+  let inserted = 0
+  let skipped = 0
+  
   for (const h of houses) {
+    // 检查是否已存在（按平台链接去重）
+    const exists = await House.findOne({ platformUrl: h.platformUrl })
+    if (exists) {
+      skipped++
+      continue
+    }
+    
     try {
-      const exists = await House.findOne({ title: h.title })
-      if (exists) continue
-      
       await House.create(h)
-      saved++
-    } catch (e) {
-      console.error(`  ✗ 保存失败:`, e.message)
+      inserted++
+    } catch (err) {
+      console.log('  ⚠️ 写入失败:', err.message)
     }
   }
   
-  console.log(`\n✅ 新增 ${saved} 条房源`)
-}
-
-async function main() {
-  console.log('========== 京东拍卖爬虫启动 ==========')
-  console.log(`时间: ${new Date().toLocaleString('zh-CN')}`)
-  
-  try {
-    const houses = await crawlJDAuction()
-    await saveHouses(houses)
-  } catch (err) {
-    console.error('❌ 爬虫执行失败:', err)
-  }
+  console.log(`\n✅ 完成！新增 ${inserted} 条，跳过重复 ${skipped} 条`)
   
   await mongoose.disconnect()
-  console.log('========== 爬虫结束 ==========')
+  return houses
 }
 
-if (require.main === module) {
-  main().catch(console.error)
+function formatPrice(v) {
+  if (!v) return '-'
+  return v >= 100000000 ? (v/100000000).toFixed(1) + '亿' : (v/10000).toFixed(0) + '万'
 }
 
-module.exports = { crawlJDAuction, saveHouses }
+// 命令行参数
+const args = process.argv.slice(2)
+const limitArg = args.find(a => a.startsWith('--limit'))
+const limit = limitArg ? parseInt(limitArg.split('=')[1] || args[args.indexOf(limitArg) + 1]) : 100
+const dryRun = args.includes('--dry-run')
+
+// 执行
+crawlJdAuction(limit, dryRun).catch(err => {
+  console.error('❌ 爬虫执行失败:', err)
+  process.exit(1)
+})

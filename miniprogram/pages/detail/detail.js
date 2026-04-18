@@ -36,7 +36,7 @@ Page({
       // 预计算显示字段（避免wxml不支持字符串拼接）
       const p = v => v ? (parseFloat(v) >= 100000000
         ? (parseFloat(v)/100000000).toFixed(1) + '亿'
-        : (parseFloat(v)/10000).toFixed(0)) : '—'
+        : (parseFloat(v)/10000).toFixed(0) + '万') : '—'
       const house = {
         ...h,
         displayStartPrice: p(h.auctionStartPrice),

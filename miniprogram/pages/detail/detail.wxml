@@ -16,6 +16,34 @@
     <view class="status-watches" wx:if="{{house.watchCount}}">👁 {{house.watchCount}}人设置提醒</view>
   </view>
 
+  <!-- 🔑 关键信息卡片（突出保证金+房屋性质） -->
+  <view class="card key-info-card">
+    <view class="key-info-grid">
+      <view class="key-info-item highlight">
+        <view class="key-info-value">{{house.displayDeposit}}</view>
+        <view class="key-info-label">保证金</view>
+      </view>
+      <view class="key-info-item">
+        <view class="key-info-value">{{house.propertyType || '住宅'}}</view>
+        <view class="key-info-label">房屋性质</view>
+      </view>
+      <view class="key-info-item">
+        <view class="key-info-value">{{house.area ? house.area + 'm²' : '-'}}</view>
+        <view class="key-info-label">面积</view>
+      </view>
+      <view class="key-info-item">
+        <view class="key-info-value {{house.riskLevel === '高' ? 'risk-high' : house.riskLevel === '低' ? 'risk-low' : ''}}">{{house.riskLevel || '中'}}</view>
+        <view class="key-info-label">风险等级</view>
+      </view>
+    </view>
+    <!-- 平台链接入口 -->
+    <view class="platform-link-bar" bindtap="gotoPlatform" wx:if="{{house.platformUrl}}">
+      <view class="platform-link-icon">{{house.platform === 'ali' ? '🛒' : '🏬'}}</view>
+      <view class="platform-link-text">查看{{house.platform === 'ali' ? '淘宝' : '京东'}}拍卖详情</view>
+      <view class="platform-link-arrow">→</view>
+    </view>
+  </view>
+
   <!-- 价格区域 -->
   <view class="card price-card">
     <view class="price-main">
@@ -33,10 +61,6 @@
         <text class="price-label-sm">当前价</text>
         <text class="current-value">{{house.displayCurrentPrice}}</text>
       </view>
-      <view class="price-item">
-        <text class="price-label-sm">保证金</text>
-        <text class="deposit-value">{{house.displayDeposit}}</text>
-      </view>
     </view>
     <view class="discount-bar" wx:if="{{house.marketPrice > house.auctionStartPrice}}">
       低于市场价 <text class="discount-num">{{house.displayDiscountOff}}</text>，
@@ -44,7 +68,7 @@
     </view>
   </view>
 
-  <!-- 🏛️ 法院公告信息（新增） -->
+  <!-- 🏛️ 法院公告信息 -->
   <view class="card court-card" wx:if="{{house.courtInfo && house.courtInfo.courtName}}">
     <view class="card-header">
       <text class="card-header-icon">🏛️</text>
@@ -100,7 +124,7 @@
     <view class="court-disclaimer">* 以上信息以拍卖平台公示为准</view>
   </view>
 
-  <!-- 优缺点提炼（新增） -->
+  <!-- 优缺点提炼 -->
   <view class="card pros-cons-card" wx:if="{{house.prosCons}}">
     <view class="card-header">
       <text class="card-header-icon">📋</text>
@@ -130,17 +154,9 @@
     <view class="info-title">{{house.title}}</view>
     <view class="info-location">📍 {{house.district}}{{house.address ? ' · ' + house.address : ''}}</view>
     <view class="info-grid">
-      <view class="info-cell" wx:if="{{house.propertyType}}">
-        <text class="info-value {{house.propertyType === '住宅' ? 'prop-residence' : 'prop-commercial'}}">{{house.propertyType}}</text>
-        <text class="info-label">物业类型</text>
-      </view>
       <view class="info-cell">
         <text class="info-value">{{house.roomLayout || '-'}}</text>
         <text class="info-label">户型</text>
-      </view>
-      <view class="info-cell">
-        <text class="info-value">{{house.area ? house.area + 'm²' : '-'}}</text>
-        <text class="info-label">面积</text>
       </view>
       <view class="info-cell">
         <text class="info-value">{{house.floor || '-'}}</text>
@@ -219,8 +235,8 @@
     <view class="bottom-btn watch" bindtap="toggleWatch">
       {{isWatched ? '✅ 已提醒' : '🔔 提醒我'}}
     </view>
-    <view class="bottom-btn goto" bindtap="gotoPlatform">
-      去{{house.platform === 'ali' ? '阿里' : '京东'}}出价 →
+    <view class="bottom-btn goto" bindtap="gotoPlatform" wx:if="{{house.platformUrl}}">
+      去{{house.platform === 'ali' ? '淘宝' : '京东'}}出价 →
     </view>
   </view>
 </view>

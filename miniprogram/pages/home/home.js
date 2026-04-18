@@ -86,7 +86,7 @@ Page({
       if (res.code === 0) {
         const p = v => v ? (parseFloat(v) >= 100000000
           ? (parseFloat(v)/100000000).toFixed(1) + '亿'
-          : (parseFloat(v)/10000).toFixed(0)) : '—'
+          : (parseFloat(v)/10000).toFixed(0) + '万') : '—'
         const list = (reset ? res.data.list : [...this.data.houses, ...res.data.list]).map(h => ({
           ...h,
           displayStartPrice: p(h.auctionStartPrice),

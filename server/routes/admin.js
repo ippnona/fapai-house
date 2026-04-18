@@ -74,6 +74,36 @@ router.post('/houses', authMiddleware, adminMiddleware, async (req, res) => {
   }
 })
 
+// PUT /api/admin/houses/:id — 编辑房源
+router.put('/houses/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const house = await House.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    )
+    if (!house) {
+      return res.status(404).json({ code: 404, msg: '房源不存在' })
+    }
+    res.json({ code: 0, msg: '更新成功', data: house })
+  } catch (err) {
+    res.status(500).json({ code: 500, msg: '更新失败：' + err.message })
+  }
+})
+
+// DELETE /api/admin/houses/:id — 删除房源
+router.delete('/houses/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const house = await House.findByIdAndDelete(req.params.id)
+    if (!house) {
+      return res.status(404).json({ code: 404, msg: '房源不存在' })
+    }
+    res.json({ code: 0, msg: '删除成功' })
+  } catch (err) {
+    res.status(500).json({ code: 500, msg: '删除失败' })
+  }
+})
+
 // GET /api/admin/stats — 数据概览
 router.get('/stats', authMiddleware, adminMiddleware, async (req, res) => {
   try {

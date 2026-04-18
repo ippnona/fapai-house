@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+const path = require('path')
 const authRoutes = require('./routes/auth')
 const houseRoutes = require('./routes/houses')
 const adminRoutes = require('./routes/admin')
@@ -12,6 +13,9 @@ const app = express()
 // 中间件
 app.use(cors())
 app.use(express.json())
+
+// 静态文件服务（管理后台）
+app.use(express.static(path.join(__dirname, 'public')))
 
 // 数据库连接
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/fapai-house'
@@ -29,6 +33,11 @@ app.use('/api/news', newsRoutes)
 // 健康检查
 app.get('/api/health', (req, res) => {
   res.json({ code: 0, msg: 'ok', time: new Date().toISOString() })
+})
+
+// SPA fallback - 管理后台
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'))
 })
 
 // 错误处理
