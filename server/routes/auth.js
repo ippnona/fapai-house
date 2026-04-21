@@ -114,7 +114,7 @@ router.post('/login', async (req, res) => {
   try {
     const { phone, password } = req.body
 
-    const user = await User.findOne({ phone })
+    const user = await User.findOne({ phone }).select("+password")
     if (!user) {
       return res.status(400).json({ code: 400, msg: '该手机号未注册' })
     }
